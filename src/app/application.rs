@@ -1,64 +1,97 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak, MutexGuard};
+use std::path::PathBuf;
+use std::str::FromStr;
+use std::collections::BTreeMap;
 
-use super::{Config, AppEvent, AppError};
+use kea;
+
 use crate::glutin::{event_loop::EventLoop, PossiblyCurrent};
-use crate::euclid::default::Vector2D;
-use crate::kea::comm::{Duplex, duplex, channel, Sender};
+use crate::euclid::{default::Vector2D, vec2};
 use crate::renderer::{Renderer, Window, window::LogicalSize, Rect, Color};
-use crate::core::KeaCore;
+use crate::core::{self, KeaCore, Edit, Update};
 use crate::ui::*;
+use kea::comm::{Duplex, duplex, channel, Sender};
+use super::{Config, AppEvent, AppError};
 
 use log::{info, debug, error};
+
+
+pub struct App(Arc<Mutex<Application>>);
+
+impl App {
+    pub fn new(app: Application, ) -> Self {
+        App(Arc::new(Mutex::new(app)))
+    }
+
+    pub fn inner(&self) -> MutexGuard<Application> {
+        self.0.lock().unwrap()
+    }
+
+    pub fn weak(&self) -> WeakApp {
+        WeakApp(Arc::downgrade(&self.0))
+    }
+}
+
+
+pub struct WeakApp(Weak<Mutex<Application>>);
+
+impl WeakApp {
+    pub fn upgrade(&self) ->  App {
+        match self.0.upgrade() {
+            Some(core) => App(core),
+            None => panic!("Kea Core was not created"),
+        }
+    }
+}
 
 pub struct Application {
     /// an interface for the application to interact with the renderer.
     renderer: Renderer,
     /// the main window for this application
     window: Window<PossiblyCurrent>,
-    /// The editing core engine.
-    // This doesn't need to be an arc mutex because the underlining type uses one.
-    core: Box<KeaCore>,
-
     // /// a duplex for communicating with the core thread.
-    // duplex: Duplex<(), ()>
+    sender: Sender<Edit>,
+    /// is a redraw requested.
     draw_requested: bool,
-
+    /// the current configuration of the application. This should be a global configuration.
     config: Config,
+    /// frames this application contains
+    frames: BTreeMap<FrameId, Box<Frame>>,
+    /// how the frames are positioned on the screen
+    layout: FrameLayout,
 }
 
 impl Application {
-    pub fn with_config(context: Renderer, window: Window<PossiblyCurrent>, config: Config) -> Result<Self, super::AppError> {
+    pub fn with_config(context: Renderer, window: Window<PossiblyCurrent>, sender: Sender<Edit>, config: Config) -> Result<Self, super::AppError> {
         let el = EventLoop::<AppEvent>::with_user_event();
+
+
 
         Ok(Self {
             renderer: context,
             window,
-            core: Box::new(KeaCore::new(&config)),
-            // core: Arc::new(Mutex::new(KeaCore::new(&config))),
-            // duplex: app_duplex,
+            sender,
             draw_requested: true,
             config,
+            frames: BTreeMap::new(),
+            layout: FrameLayout::new(),
         })
-    }
-
-    pub fn as_arc(self) -> Arc<Mutex<Self>> {
-        Arc::new(Mutex::new(self))
     }
 
     pub fn test_render(&self) {
     }
 
-    fn render(&mut self, ctx: &mut Renderer) {
+    fn render(&mut self) {
     }
 
     pub fn maybe_render(&mut self) {
         if self.draw_requested {
             self.renderer.clear();
-            self.renderer.render_str("Hello, World", 300f32, 10f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.config.font_desc(), self.config.font_size());
+            // self.renderer.render_str("Hello, World", 300f32, 10f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.config.font_desc(), self.config.font_size());
             self.renderer.flush();
             self.window.swap_buffers();
             // // render the updated state of the screen.
-            // self.render(&mut guard);
+            self.render();
             // flush the rest of the buffer
             self.draw_requested = false;
         }
@@ -68,5 +101,37 @@ impl Application {
         self.draw_requested = true;
         self.renderer.update_perspective(width as i32, height as i32);
         // do what ever is needed here for the rest of the app to update.
+    }
+
+    pub fn on_init(&mut self) {
+        let window_size = self.window.get_size();
+        let size: Vector2D<f32> = vec2(window_size.width as f32, window_size.height as f32);
+        let origin: Vector2D<f32> = vec2(0.0f32, 0.0f32);
+
+        let frame_info = FrameInfo {
+            path: Some(PathBuf::from_str("src/main.rs").unwrap()),
+            size,
+        }
+
+        // for testing. This might be removed or it can be used to initialize the application.
+        // let path = PathBuf::from_str("src/main.rs").unwrap();
+        // let edit = Edit::OpenFile(path);
+        // self.sender.send(edit).unwrap();
+
+        // let view_info = core::ViewInfo {};
+        // let view = Edit::NewView(view_info);
+        // self.sender.send(view).unwrap();
+    }
+
+    pub fn apply_update(&mut self, update: Update) {
+        use Update::*;
+        match update {
+            View(result) => {
+                info!("{:?}", result);
+            }
+            Error(err) => {
+                info!("{:?}", err);
+            }
+        }
     }
 }

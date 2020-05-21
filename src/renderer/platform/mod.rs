@@ -20,6 +20,3 @@ pub fn get_version() -> String {
 
     format!("{}.{}", major_version, minor_version).to_string()
 }
-
-// 06815484
-// 619689

@@ -26,6 +26,10 @@ pub mod comm {
         pub fn recv(&self) -> Result<A, mpsc::RecvError> {
             self.c2.recv()
         }
+
+        pub fn decompose(self) -> (Sender<S>, Receiver<A>) {
+            (self.c1, self.c2)
+        }
     }
 
     pub fn duplex<S, A>() -> (Duplex<S, A>, Duplex<A, S>) {
@@ -49,6 +53,13 @@ pub mod utils {
     #[cfg(not(any(target_os="linux", target_os="macos")))]
     pub fn log_file_path() -> String {
         "./logs/kea.log".to_string()
+    }
+
+    pub fn spawn_thread<F, T>(name: &str, f: F) -> std::thread::JoinHandle<T>
+        where F: Fn() -> T,
+              F: Send + 'static,
+              T: Send + 'static {
+        std::thread::Builder::new().name(name.to_string()).spawn(f).expect(format!("Failed to construct thread: {}", name).as_str())
     }
 }
 

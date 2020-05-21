@@ -15,7 +15,6 @@ mod ui;
 mod renderer;
 mod font;
 
-mod kea;
 
 use log::{debug, error, info, trace, warn};
 use renderer::{Window, window::LogicalSize};

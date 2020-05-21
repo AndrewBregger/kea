@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use super::kea::comm::{Receiver};
+use kea::comm::{Receiver};
 pub mod window;
 mod rect;
 mod color;

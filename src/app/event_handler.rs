@@ -8,9 +8,11 @@ use crate::glutin::{
 
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::sync::mpsc::Receiver;
 
 use crate::renderer::Window;
-use super::Application;
+use super::{App, Application};
+use crate::core::Update;
 
 
 pub enum ClickState {
@@ -76,8 +78,8 @@ impl EventHandler {
                     _ => false,
                 }
             }
+            event::Event::NewEvents { .. } => false,
             event::Event::Suspended { .. }
-            | event::Event::NewEvents { .. }
             | event::Event::MainEventsCleared
             | event::Event::LoopDestroyed => true,
             event::Event::DeviceEvent { .. } => true,
@@ -162,11 +164,18 @@ impl EventHandler {
                 // HoveredFileCancelled => {},
                 _ => {}
             },
+            event::Event::NewEvents(start_cause) => {
+                use event::StartCause::*;
+                match start_cause {
+                    Init => app.on_init(),
+                    _ => {}
+                }
+            }
             _ => (),
         }
     }
 
-    pub fn run(&mut self, app: Arc<Mutex<Application>>, mut event_loop: event_loop::EventLoop<AppEvent>) {
+    pub fn run(&mut self, app: App, mut event_loop: event_loop::EventLoop<AppEvent>, receiver: Receiver<Update>) {
         let mut event_queue = Vec::new();
 
         event_loop.run_return(|event, el, cf| {
@@ -192,19 +201,12 @@ impl EventHandler {
                 },
             }
 
-            match app.lock() {
-                Ok(mut app) => {
-                    for event in event_queue.drain(..) {
-                        Self::handle_event(event, self, &mut app);
-                    }
-                    
-                    app.maybe_render();
-                }
-                Err(_) => {
-                    // this could possibly silently fail.
-                    panic!("Failed to app aquire lock");
-                },
+            let mut guard = app.inner();
+            for event in event_queue.drain(..) {
+                Self::handle_event(event, self, &mut guard);
             }
+
+            guard.maybe_render();
         });
-}
+    }
 }

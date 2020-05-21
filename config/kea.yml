@@ -1,4 +1,5 @@
 font:
   family: "Fira Code Retina"
-  size: 14
+  # family: "Arial"
+  size: 12
 # color_scheme: "blah"

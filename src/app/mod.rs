@@ -4,19 +4,20 @@ mod application;
 mod event_handler;
 
 pub use config::{Config};
-use super::kea::{self, utils::log_file_path};
+use kea::{self, utils::log_file_path, comm::Receiver};
 use super::renderer::{self, Renderer, window::{Window, LogicalSize}};
-use application::{Application};
+use application::{Application, App, WeakApp};
 use event_handler::{EventHandler};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak};
 use crate::font::{FontCollection, GlyphId, Font, FontMetrics};
-
 use crate::renderer::platform::atlas::FontAtlas;
+use crate::core::{self, KeaCore, Edit, Update};
 
 use glutin::event_loop::EventLoop;
 
 use log::{error, info};
 
+#[derive(Debug, Clone)]
 pub enum AppEvent {
     Exit,
 }
@@ -34,7 +35,8 @@ pub enum AppError {
 pub fn run(config: Config) -> Result<(), AppError> {
     let event_loop = EventLoop::<AppEvent>::with_user_event();
     let window = Window::<glutin::NotCurrent>::new(&event_loop, LogicalSize::new(500 as _, 400 as _), "kea", &config).unwrap();
-    // let (app_duplex, core_duplex) = kea::comm::duplex::<(), ()>();
+    let (app_duplex, core_duplex) = kea::comm::duplex::<Edit, Update>();
+    let (app_sender, app_receiver) = app_duplex.decompose();
 
     let dpi = window.dpi_factor() as f32;
 
@@ -72,17 +74,37 @@ pub fn run(config: Config) -> Result<(), AppError> {
     let (width, height) = window.get_size().into();
     renderer.update_perspective(width, height);
 
-    let app = Application::with_config(renderer, window, config)?.as_arc();
+    let core = KeaCore::new(&config);
+
 
     let elp = event_loop.create_proxy();
     let mut event_handler = EventHandler::new(elp);
 
+    let app = Application::with_config(renderer, window, app_sender, config)?;
+    let app = App::new(app);
+    // let _update = application_update_thread(app.weak(), app_receiver);
+
+    let _core = core::main_loop(core, core_duplex);
     // app.start();
-    event_handler.run(app, event_loop);
+    event_handler.run(app, event_loop, app_receiver);
 
     // TODO: handle the join.
-    // render.join().unwrap();
+    // core.join().unwrap();
     Ok(())
+}
+
+fn application_update_thread(app: WeakApp, receiver: Receiver<Update>) -> std::thread::JoinHandle<()> {
+    unimplemented!();
+    // kea::utils::spawn_thread("app update", move || {
+    //     loop {
+    //         let update = match receiver.recv()  {
+    //             Ok(update) => update,
+    //             _ => panic!("Channel disconnected"),
+    //         };
+
+    //         app.upgrade().inner().apply_update(update);
+    //     }
+    // })
 }
 
 pub fn setup_logger(config: &Config) -> Result<(), fern::InitError> {
