@@ -1,4 +1,4 @@
-use euclid::default::Transform3D;
+// use euclid::default::Transform3D;
 extern crate gl;
 // use super::*;
 
@@ -12,6 +12,7 @@ use std::str;
 
 use crate::renderer::RenderError;
 use crate::renderer::Vector4D;
+use pathfinder_geometry::transform3d::Transform4F;
 
 pub fn load_file<P: AsRef<std::path::Path>>(filename: P) -> String {
     let content = fs::read_to_string(&filename).expect(
@@ -187,13 +188,13 @@ impl RectShader {
         Ok(())
     }
 
-    pub fn set_perspective(&self, perf: &Transform3D<f32>) {
+    pub fn set_perspective(&self, perf: &Transform4F) {
         unsafe {
             gl_check!(gl::UniformMatrix4fv(
                 self.per_loc as i32,
                 1,
                 gl::FALSE,
-                perf.to_row_major_array().as_ptr() as *const _
+                perf.as_ptr() as *const _
             ))
         }
     }
@@ -261,13 +262,13 @@ impl TextShader {
         Ok(())
     }
 
-    pub fn set_perspective(&self, perf: &Transform3D<f32>) {
+    pub fn set_perspective(&self, perf: &Transform4F) {
         unsafe {
             gl_check!(gl::UniformMatrix4fv(
                 self.per_loc as i32,
                 1,
                 gl::FALSE,
-                perf.to_row_major_array().as_ptr() as *const _
+                perf.as_ptr() as *const _
             ));
         }
     }

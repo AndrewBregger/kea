@@ -1,4 +1,5 @@
-use crate::euclid::default::Vector2D;
+// use crate::euclid::default::Vector2D;
+use crate::pathfinder_geometry::vector::{vec2f, Vector2F};
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -13,7 +14,7 @@ pub struct FrameInfo {
     /// buffer id
     pub path: Option<PathBuf>,
     /// the pixel size of the new view
-    pub size: Vector2D<f32>,
+    pub size: Vector2F,
     /// the lines to be shown first
     pub start_line: usize,
     /// the number of lines show in this view

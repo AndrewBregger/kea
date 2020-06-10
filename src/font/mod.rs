@@ -1,24 +1,28 @@
-extern crate euclid;
+// extern crate euclid;
 extern crate font_kit;
-extern crate freetype as ft;
+use crate::pathfinder_geometry;
+// extern crate freetype as ft;
+// use ft::{Library};
+pub use font_kit::canvas::{Canvas, Format, RasterizationOptions};
+pub use font_kit::family_name::FamilyName;
+pub use font_kit::font;
+pub use font_kit::properties::Properties;
+pub use font_kit::hinting::HintingOptions;
 
-use ft::{Library};
-use euclid::{Point2D, Size2D};
-pub use font_kit::{family_name::FamilyName, font, properties::Properties};
+pub use font_kit::error;
 use std::{hash::Hasher,
           io::{Read, BufReader},
           sync::Arc,
           collections::HashMap};
-use euclid::default::Scale;
+use pathfinder_geometry::{vector::{Vector2F, Vector2I}, transform2d::Transform2F};
 use std::str;
-use euclid::{default::Vector2D, vec2};
 
 #[derive(Debug, thiserror::Error)]
 pub enum FontError {
     #[error("failed to load font: {:?} | {:?}", font.name, err)]
     FontLoadError {
         font: FontDesc,
-        err: ft::error::Error,
+        err: error::FontLoadingError,
     },
 
     #[error("invalid font size metrics: {:?}", font.name)]
@@ -26,10 +30,6 @@ pub enum FontError {
         font: FontDesc
     },
 
-    #[error("failed to failed to initialize library: {:?}", err)]
-    LibraryInit {
-        err: ft::error::Error
-    },
 
     #[error("failed to find font: {:?}", font.name)]
     InvalidFont {
@@ -47,7 +47,7 @@ pub enum FontError {
     },
 
     #[error("failed to load glyph: {} | {}", ch, err)]
-    GLyphError {
+    GlyphError {
         ch: char,
         err: font_kit::error::GlyphLoadingError,
     },
@@ -174,7 +174,7 @@ impl ScaledFontMetrics {
 
 /// collection of fonts used by the application
 pub struct FontCollection {
-    pub lib: Library,
+    // pub lib: Library,
     fonts: Vec<Font>,
     device_pixel_ratio: f32,
 }
@@ -182,7 +182,7 @@ pub struct FontCollection {
 #[derive(Clone)]
 pub struct Font {
     /// Loaders representation of a font.
-    pub(crate) source: ft::Face,
+    pub(crate) source: font::Font,
     /// description of what font is to be loaded.
     pub(crate) desc: FontDesc,
     pub(crate) device_pixel_ratio: f32,
@@ -198,7 +198,6 @@ pub struct GlyphId {
 impl FontCollection {
     pub fn new(device_pixel_ratio: f32) -> Result<Self, FontError> {
         Ok(Self {
-            lib: Library::init().map_err(|e| FontError::LibraryInit {err: e })?,
             fonts: Vec::new(),
             device_pixel_ratio,
         })
@@ -215,7 +214,7 @@ impl FontCollection {
     }
 
     pub fn add_font(&mut self, desc: FontDesc) -> Result<(), FontError> {
-        let font = Font::new(&self.lib, desc, self.device_pixel_ratio)?;
+        let font = Font::new(desc, self.device_pixel_ratio)?;
         println!("Num GLyphs: {}", font.num_glyphs());
         self.fonts.push(font);
         Ok(())
@@ -245,6 +244,20 @@ impl FontCollection {
 
     pub fn dpi_factor(&self) -> f32 {
         self.device_pixel_ratio
+    }
+
+    pub fn add_default(&mut self) {
+        let desc = if cfg!(target_os = "win32") {
+          	FontDesc::new("Courier New", Properties::new())
+        }
+        else if cfg!(target_os = "macos") {
+          	FontDesc::new("Menlo", Properties::new())
+        }
+        else {
+          	FontDesc::new("Deja Vu Sans", Properties::new())
+        };
+
+        self.add_font(desc).expect("failed to find default font");
     }
 }
 
@@ -281,55 +294,28 @@ pub struct RasterizedGlyph {
     pub stride: usize,
     pub width: i32,
     pub height: i32,
-    pub origin: Vector2D<f32>,
-    pub advance: Vector2D<f32>,
+    pub origin: Vector2F,
+    pub advance: Vector2F,
     pub bitmap: Vec<u8>,
 }
 
 impl Font {
-    fn new(lib: &Library, desc: FontDesc, device_pixel_ratio: f32) -> Result<Self, FontError> {
-        let font = font_kit::source::SystemSource::new()
+    fn new(desc: FontDesc, device_pixel_ratio: f32) -> Result<Self, FontError> {
+        let source = font_kit::source::SystemSource::new()
             .select_best_match(&[desc.name.clone()], &desc.properties)
-            .map_err(|e| FontError::SelectionError { err: e })?;
-        let (buffer, index) = match font {
-            font_kit::handle::Handle::Path {
-                path,
-                font_index,
-            } => {
-                println!("Path: {}", path.display());
-                let buffer = std::fs::File::open(path)
-                             .and_then(|f| Ok(BufReader::new(f)))
-                             .and_then(|b| Ok(b.bytes().map(|e| e.unwrap()).collect()))
-                             .map_err(|e| FontError::InvalidFont { font: desc.clone()})?;
-                // let file = std::fs::File::open(path).map_err(|e| )?;
-                // let buf_reader = BufReader::new(file);
-                // let buffer: Vec<u8> = buf_reader.bytes().map(|e| e.unwrap()).collect();
-                (buffer, font_index)
-            }
-            font_kit::handle::Handle::Memory {
-                bytes,
-                font_index
-            } => {
-                let buffer = Arc::try_unwrap(bytes).expect("Expected only one strong reference");
-                println!("Memory FontIndex: {}", font_index);
-                (buffer, font_index)
-            }
-        };
-
-        let face = lib.new_memory_face(buffer, index as isize).map_err(|e| FontError::FontLoadError { font: desc.clone(), err: e})?;
+            .map_err(|e| FontError::SelectionError { err: e })?
+            .load().map_err(|e| FontError::FontLoadError { font: desc.clone(), err: e})?;
 
         Ok(Self {
-            source: face,
             desc,
+            source,
             device_pixel_ratio
         })
 
     }
 
     pub fn num_glyphs(&self) -> u32 {
-        // unsafe {
-            self.source.raw().num_glyphs as u32
-        // }
+        self.source.glyph_count()
     }
 
     pub fn desc(&self) -> &FontDesc {
@@ -339,12 +325,13 @@ impl Font {
     pub fn font_metrics(&self) -> Result<FontMetrics, FontError> {
 
         // let metrics = self.source.size_metrics().ok_or(FontError::InvalidFontMetrics { font: self.desc.clone() })?;
+        let metrics = self.source.metrics();
 
-        let height  = self.source.height() as f32;
-        let ascent  = self.source.ascender() as f32;
-        let descent = self.source.descender() as f32;
 
-        let ppem = self.source.em_size() as f32;
+        let height  = metrics.x_height as f32;
+        let ascent  = metrics.ascent as f32;
+        let descent = metrics.descent as f32;
+        let ppem = metrics.units_per_em as f32;
 
 
         Ok(FontMetrics {
@@ -357,65 +344,52 @@ impl Font {
         })
     }
 
-    pub fn get_glyph_index(&self, codepoint: char) -> u32 {
-        self.source.get_char_index(codepoint as usize)
+    pub fn get_glyph_index(&self, codepoint: char) -> Option<u32> {
+        self.source.glyph_for_char(codepoint)
     }
 
     pub fn supports_codepoint(&self, codepoint: char) -> bool {
-        self.source.get_char_index(codepoint as usize) != 0
+        self.get_glyph_index(codepoint).is_some()
     }
 
     pub fn rasterize_glyph(&self, codepoint: char, height: f32) -> Result<RasterizedGlyph, FontError> {
+		//println!("Char: {}", codepoint);
         let glyph = GlyphId::new(codepoint, height, self.desc.clone());
         let height = glyph.scale_size(self.device_pixel_ratio);
+        if let Some(glyph_id) = self.get_glyph_index(codepoint) {
+            let bounding_box = self.source.raster_bounds(glyph_id, height, Transform2F::default(), HintingOptions::None, RasterizationOptions::SubpixelAa)
+            	.unwrap();
+			let mut canvas = Canvas::new(bounding_box.size(), Format::Rgb24);
 
-        let height = to_freetype_26_6(height);
+            self.source.rasterize_glyph(
+                			&mut canvas,
+                			glyph_id,
+                			height,
+                			Transform2F::from_translation(-bounding_box.origin().to_f32()),
+                			HintingOptions::None,
+                			RasterizationOptions::SubpixelAa)
+                		.map_err(|err| FontError::GlyphError { ch: codepoint, err })?;
+			let advance = self.source.advance(glyph_id).map_err(|err| FontError::GlyphError { ch: codepoint, err })?;
 
-        self.source.set_char_size(0, height, 0, 0).unwrap();
-        self.source.load_char(glyph.glyph as usize, ft::face::LoadFlag::RENDER).unwrap();
-        let rasterized_glyph = self.source.glyph();
-
-        rasterized_glyph.render_glyph(ft::RenderMode::Normal).unwrap();
-        let buffer = rasterized_glyph.bitmap();
-        let metrics = rasterized_glyph.metrics();
-        let x = rasterized_glyph.bitmap_left();
-        let y = rasterized_glyph.bitmap_top() - buffer.rows();
-
-        let origin = vec2(x as f32, y as f32);
-
-        // let mut bitmap = Vec::new();
-        let pitch = buffer.pitch() as usize;
-        let buf = buffer.buffer();
-
-        let mut rows = Vec::new();
-        match buffer.pixel_mode().unwrap() {
-            ft::bitmap::PixelMode::Gray => {
-                for i in 0..buffer.rows() {
-                    let start = (i as usize) * pitch;
-                    let stop = start + pitch; // as usize;
-                    rows.push(Vec::new());
-                    for byte in &buf[start..stop] {
-                        rows.last_mut().unwrap().extend_from_slice(&[*byte, *byte, *byte]);
-                    }
-                }
-            }
-            e => unimplemented!("Unhandled pixel mode: {:?}", e)
+            Ok(RasterizedGlyph {
+                glyph,
+                stride: canvas.stride,
+                width: canvas.size.x(),
+                height: canvas.size.y(),
+                origin: bounding_box.origin().to_f32(),
+                advance,
+                bitmap: canvas.pixels,
+            })
+        }
+        else {
+			Err(FontError::UnsupportedGlyph { ch: codepoint })
         }
 
-        let stride = buffer.width() as usize * 3;
-        rows.reverse();
-        // let bitmap: Vec<u8> = buffer.buffer().to_owned();
-        let bitmap: Vec<u8> = rows.iter().flatten().map(|val| *val).collect();
 
-        Ok(RasterizedGlyph {
-            glyph,
-            stride,
-            width: buffer.width(),
-            height: buffer.rows(),
-            origin,
-            advance: vec2((metrics.horiAdvance >> 6) as f32, (metrics.vertAdvance >> 6) as f32),
-            bitmap,
-        })
+
+		/*
+         */
+        // unimplemented!()
     }
 
     #[inline]

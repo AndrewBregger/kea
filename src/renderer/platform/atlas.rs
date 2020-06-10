@@ -6,10 +6,11 @@ use crate::font::{self, FontDesc, GlyphId, RasterizedGlyph, FontMetrics, FontCol
 use crate::gl::{self, types::*};
 use std::collections::HashMap;
 use crate::renderer::Vector4D;
-use euclid::{default::Vector2D, vec2};
-type AtlasSize = euclid::Size2D<i32, euclid::UnknownUnit>;
+// use euclid::{default::Vector2D, vec2};
+use crate::pathfinder_geometry::vector::{vec2f, Vector2F, Vector2I};
+type AtlasSize = (i32, i32);
 
-const ATLAS_SIZE: AtlasSize = AtlasSize::new(1024, 1024);
+const ATLAS_SIZE: AtlasSize = (1024, 1024);
 const MAX_ATLASES: usize = 4;
 
 macro_rules! gl_check_impl {
@@ -65,18 +66,16 @@ fn create_texture(size: &AtlasSize, wrap: GLenum, mapping: GLenum) -> u32 {
         gl::BindTexture(gl::TEXTURE_2D, handle);
 
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap as GLint);
-
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap as GLint);
-
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, mapping as GLint);
-
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mapping as GLint);
+
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,
             gl::RGB as i32,
-            size.width,
-            size.height,
+            size.0,
+            size.1,
             0,
             gl::RGB,
             gl::UNSIGNED_BYTE,
@@ -91,11 +90,11 @@ fn create_texture(size: &AtlasSize, wrap: GLenum, mapping: GLenum) -> u32 {
 #[derive(Debug, Clone)]
 pub struct GlyphInfo {
     pub tex: u32,
-    pub uv: Vector2D<f32>,
-    pub uv_delta: Vector2D<f32>,
-    pub size: Vector2D<f32>,
-    pub advance: Vector2D<f32>,
-    pub origin: Vector2D<f32>,
+    pub uv: Vector2F,
+    pub uv_delta: Vector2F,
+    pub size: Vector2F,
+    pub advance: Vector2F,
+    pub origin: Vector2F,
 }
 
 /// Collection of Atlass that make up the font.
@@ -190,14 +189,14 @@ impl FontAtlas {
 
         atlas.unbind();
 
-        let uv = vec2(
-            self.x_offset as f32 / ATLAS_SIZE.width as f32,
-            self.y_offset as f32 / ATLAS_SIZE.height as f32,
+        let uv = vec2f(
+            self.x_offset as f32 / ATLAS_SIZE.0 as f32,
+            self.y_offset as f32 / ATLAS_SIZE.1 as f32,
         );
 
-        let uv_delta = vec2(
-            glyph.width as f32 / ATLAS_SIZE.width as f32,
-            (glyph.height + 1) as f32 / ATLAS_SIZE.height as f32,
+        let uv_delta = vec2f(
+            glyph.width as f32 / ATLAS_SIZE.0 as f32,
+            (glyph.height + 1) as f32 / ATLAS_SIZE.1 as f32,
         );
 
         let advance = glyph.advance;
@@ -207,7 +206,7 @@ impl FontAtlas {
             tex: atlas.handle,
             uv,
             uv_delta,
-            size: vec2(glyph.width as f32, (glyph.height + 1) as f32),
+            size: vec2f(glyph.width as f32, (glyph.height + 1) as f32),
             advance,
             origin,
         };
@@ -273,7 +272,7 @@ impl FontAtlas {
     }
 
     fn room_on_line(&self, glyph: &RasterizedGlyph) -> bool {
-        self.x_offset + glyph.width < ATLAS_SIZE.width
+        self.x_offset + glyph.width < ATLAS_SIZE.0
     }
 
     fn next_line(&mut self, glyph: &RasterizedGlyph) {
@@ -285,7 +284,7 @@ impl FontAtlas {
     }
 
     fn fit_vertical(&self, glyph: &RasterizedGlyph) -> bool {
-        self.y_offset + glyph.height < ATLAS_SIZE.height
+        self.y_offset + glyph.height < ATLAS_SIZE.1
     }
 }
 

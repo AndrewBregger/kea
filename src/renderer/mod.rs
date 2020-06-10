@@ -14,8 +14,9 @@ use std::sync::{Weak, Mutex, Arc, MutexGuard};
 pub use renderer::Renderer;
 use crate::gl::{self, types::*};
 use log::{error, info, debug};
-use euclid::default::Transform3D;
+// use euclid::default::Transform3D;
 use crate::font::{FontCollection, Font};
+use pathfinder_geometry::transform3d::Transform4F;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
@@ -121,7 +122,7 @@ impl Renderer {
         unsafe {
             gl::Viewport(0, 0, width, height);
         }
-        let ortho = Transform3D::ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0);
+        let ortho = Transform4F::from_ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0);
         self.set_perspective(&ortho);
     }
 }

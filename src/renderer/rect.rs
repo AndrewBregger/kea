@@ -1,19 +1,20 @@
 use std::convert::From;
 
-use euclid::default::Vector2D;
+// use euclid::default::Vector2D;
+use crate::pathfinder_geometry::vector::Vector2F;
 use crate::glutin::dpi::{LogicalPosition, LogicalSize, Pixel};
 use super::Color;
 
 #[derive(Debug, Clone)]
 pub struct Rect  {
-    pub pos: Vector2D<f32>,
+    pub pos: Vector2F,
     pub width: f32,
     pub height: f32,
     pub bg_color: Color,
 }
 
 impl Rect {
-    pub fn with_position(pos: Vector2D<f32>, width: f32, height: f32) -> Self {
+    pub fn with_position(pos: Vector2F, width: f32, height: f32) -> Self {
         Self {
             pos,
             width,
@@ -24,7 +25,7 @@ impl Rect {
 
     pub fn new(width: f32, height: f32) -> Self {
         Self {
-            pos: Vector2D::zero(),
+            pos: Vector2F::zero(),
             width,
             height,
             bg_color: Color::black(),

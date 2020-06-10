@@ -1,10 +1,11 @@
-use euclid::default::Vector2D;
+// use euclid::default::Vector2D;
+use crate::pathfinder_geometry::vector::Vector2F;
 use super::frame::FrameId;
 
 #[derive(Debug, Clone)]
 pub struct FrameInfo {
-    size: Vector2D<f32>,
-    origin: Vector2D<f32>,
+    size: Vector2F,
+    origin: Vector2F,
     frame: FrameId,
 }
 #[derive(Debug, Clone)]

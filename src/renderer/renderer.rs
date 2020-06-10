@@ -1,12 +1,14 @@
 use super::platform::shader::{RectShader, Shader, TextShader};
-use super::{Color, Rect, RenderError, vec4, Vector4D, Transform3D, platform};
+use super::{Color, Rect, RenderError, vec4, Vector4D, platform};
 use crate::glutin::dpi::{LogicalPosition, LogicalSize};
 use crate::font::{self, FontDesc, GlyphId, FontMetrics};
-use crate::euclid::vec2;
+// use crate::euclid::vec2;
+use crate::pathfinder_geometry::{vector::vec2f};
 use platform::atlas::{Atlas, FontAtlas};
 use std::collections::HashMap;
 
 use log::{debug, info};
+use pathfinder_geometry::transform3d::Transform4F;
 
 
 
@@ -356,7 +358,7 @@ impl Renderer {
         self.font_metrics.insert(desc, metric);
     }
 
-    pub fn set_perspective(&self, perf: &Transform3D<f32>) {
+    pub fn set_perspective(&self, perf: &Transform4F) {
         self.rect_shader.bounded(|shader| shader.set_perspective(perf));
         self.text_shader.bounded(|shader| shader.set_perspective(perf));
     }
@@ -364,7 +366,7 @@ impl Renderer {
 
     /// renders a Rect
     pub fn render_rect(&mut self, rect: &Rect) {
-        let vertex = RectVertex::create(vec4(rect.pos.x, rect.pos.y, rect.width, rect.height), rect.bg_color);
+        let vertex = RectVertex::create(vec4(rect.pos.x(), rect.pos.y(), rect.width, rect.height), rect.bg_color);
         self.submit_rect(&vertex);
     }
 
@@ -395,31 +397,31 @@ impl Renderer {
             }
 
             if let Some(info) = self.atlas.get_info(&glyph_id) {
-                let pos = vec2(x, y) + info.origin;
-                let vertex = vec4(pos.x, pos.y, info.size.x, info.size.y);
-                let tex_info = vec4(info.uv.x, info.uv.y, info.uv_delta.x, info.uv_delta.y);
+                let pos = vec2f(x, y) + info.origin;
+                let vertex = vec4(pos.x(), pos.y(), info.size.x(), info.size.y());
+                let tex_info = vec4(info.uv.x(), info.uv.y(), info.uv_delta.x(), info.uv_delta.y());
                 let tex_id = info.tex as f32;
                 let vertex = TextVertex::create(vertex, fg_color, tex_info, tex_id);
                 glyphs.push(vertex);
 
-                x += info.advance.x;
-                width += info.advance.x;
+                x += info.advance.x();
+                width += info.advance.x();
 
                 // hack
                 if 3 <= idx && idx <= 8 {
                     if idx == 3 {
                         hightlight_start = x;
                     }
-                    highlight_width += info.advance.x;
+                    highlight_width += info.advance.x();
                 }
             }
         }
 
         let bg_height = lines as f32 * metrics.line_height();
-        let rect= Rect::with_position(vec2(start_x, start_y + metrics.descent), width, bg_height).with_color(bg_color);
+        let rect= Rect::with_position(vec2f(start_x, start_y + metrics.descent), width, bg_height).with_color(bg_color);
         self.render_rect(&rect);
 
-        let rect= Rect::with_position(vec2(hightlight_start, start_y + metrics.descent), highlight_width, metrics.line_height()).with_color(Color::rgba(1.0, 0.8, 0.0, 0.6));
+        let rect= Rect::with_position(vec2f(hightlight_start, start_y + metrics.descent), highlight_width, metrics.line_height()).with_color(Color::rgba(1.0, 0.8, 0.0, 0.6));
         self.render_rect(&rect);
 
         glyphs.iter().for_each(|v| self.submit_character(v));

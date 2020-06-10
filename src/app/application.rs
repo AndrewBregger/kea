@@ -6,7 +6,8 @@ use std::collections::BTreeMap;
 use kea;
 
 use crate::glutin::{event_loop::EventLoop, PossiblyCurrent};
-use crate::euclid::{default::Vector2D, vec2};
+// use crate::euclid::{default::Vector2D, vec2};
+use crate::pathfinder_geometry::vector::{Vector2F, vec2f};
 use crate::renderer::{Renderer, Window, window::LogicalSize, Rect, Color};
 use crate::core::{self, KeaCore, Edit, Update};
 use crate::ui::*;
@@ -56,7 +57,7 @@ pub struct Application {
     /// the current configuration of the application. This should be a global configuration.
     config: Config,
     /// frames this application contains
-    frames: BTreeMap<FrameId, Box<Frame>>,
+    frames: BTreeMap<FrameId, Box<()>>,
     /// how the frames are positioned on the screen
     layout: FrameLayout,
 }
@@ -87,11 +88,14 @@ impl Application {
     pub fn maybe_render(&mut self) {
         if self.draw_requested {
             self.renderer.clear();
-            // self.renderer.render_str("Hello, World", 300f32, 10f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.config.font_desc(), self.config.font_size());
+
+            self.renderer.render_str("Hello, World", 300f32, 10f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.config.font_desc(), self.config.font_size());
+
             self.renderer.flush();
             self.window.swap_buffers();
+
             // // render the updated state of the screen.
-            self.render();
+            // self.render();
             // flush the rest of the buffer
             self.draw_requested = false;
         }
@@ -104,14 +108,14 @@ impl Application {
     }
 
     pub fn on_init(&mut self) {
-        let window_size = self.window.get_size();
-        let size: Vector2D<f32> = vec2(window_size.width as f32, window_size.height as f32);
-        let origin: Vector2D<f32> = vec2(0.0f32, 0.0f32);
+        // let window_size = self.window.get_size();
+        // let size = vec2f(window_size.width as f32, window_size.height as f32);
+        // let origin = Vector2F::zero();
 
-        let frame_info = FrameInfo {
-            path: Some(PathBuf::from_str("src/main.rs").unwrap()),
-            size,
-        }
+        // let frame_info = FrameInfo {
+        //     path: Some(PathBuf::from_str("src/main.rs").unwrap()),
+        //     size,
+        // }
 
         // for testing. This might be removed or it can be used to initialize the application.
         // let path = PathBuf::from_str("src/main.rs").unwrap();
@@ -121,17 +125,5 @@ impl Application {
         // let view_info = core::ViewInfo {};
         // let view = Edit::NewView(view_info);
         // self.sender.send(view).unwrap();
-    }
-
-    pub fn apply_update(&mut self, update: Update) {
-        use Update::*;
-        match update {
-            View(result) => {
-                info!("{:?}", result);
-            }
-            Error(err) => {
-                info!("{:?}", err);
-            }
-        }
     }
 }

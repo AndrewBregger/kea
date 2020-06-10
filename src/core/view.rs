@@ -1,4 +1,5 @@
-use crate::euclid::default::Vector2D;
+// use crate::euclid::default::Vector2D;
+use crate::pathfinder_geometry::vector::{vec2f, Vector2F};
 
 use std::ops::Range;
 use std::path::PathBuf;
@@ -14,7 +15,7 @@ pub struct View {
     /// unique identifier for this view.
     id: ViewId,
     /// the size of the view is pixels.
-    size: Vector2D<f32>,
+    size: Vector2F,
     /// the buffer associated with this view.
     buffer: BufferId,
     /// the first line visible
@@ -24,7 +25,7 @@ pub struct View {
 }
 
 impl View {
-    pub fn new(id: usize, buffer: BufferId, size: Vector2D<f32>, start_line: usize, lines: usize) -> Result<Self, CoreError> {
+    pub fn new(id: usize, buffer: BufferId, size: Vector2F, start_line: usize, lines: usize) -> Result<Self, CoreError> {
         Ok(Self {
             id: ViewId(id),
             size,
@@ -48,7 +49,7 @@ pub struct ViewInfo {
     /// view id
     pub view: ViewId,
     /// the pixel size of the new view
-    pub size: Vector2D<f32>,
+    pub size: Vector2F,
     /// the lines to be shown first
     pub start_line: usize,
     /// the number of lines show in this view

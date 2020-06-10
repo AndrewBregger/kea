@@ -44,14 +44,21 @@ pub fn run(config: Config) -> Result<(), AppError> {
     let font_desc = config.font_desc();
     let font_size = config.font_size();
 
-    font_collection.add_font(font_desc).unwrap();
+    match font_collection.add_font(font_desc) {
+        Ok(_) => {}
+        Err(e) => {
+            // add status message
+            println!("{}", e);
+            font_collection.add_default();
+        }
+    }
 
     // the font needs to be loaded on this thread because it cannot be between across thread boundaries.
     let window = window.make_current().map_err(AppError::WindowError)?;
     window.init_gl();
     
     let font_atlas = FontAtlas::from_collection(&font_collection, |atlas, font| {
-        for c in 32 as u8 .. 128 as u8 {
+        for c in 32 as u8 .. 127 as u8 {
             let rglyph = font.rasterize_glyph(c as char, font_size)?;
             atlas.add_glyph(&rglyph);
         }
@@ -65,16 +72,20 @@ pub fn run(config: Config) -> Result<(), AppError> {
     })?;
 
     renderer.set_atlas(font_atlas);
+    println!("{}", font_collection.num_fonts());
     for idx in 0..font_collection.num_fonts() {
         if let Some(font) = font_collection.font_at(idx) {
             renderer.add_font_metric(font.desc().clone(), font.font_metrics().unwrap_or(FontMetrics::new(0., 0., 0., 0., 0., 0.)))
+        }
+        else  {
+            println!("Failed to find the font at index: {}", idx);
         }
     }
 
     let (width, height) = window.get_size().into();
     renderer.update_perspective(width, height);
 
-    let core = KeaCore::new(&config);
+    // let core = KeaCore::new(&config);
 
 
     let elp = event_loop.create_proxy();
@@ -84,7 +95,7 @@ pub fn run(config: Config) -> Result<(), AppError> {
     let app = App::new(app);
     // let _update = application_update_thread(app.weak(), app_receiver);
 
-    let _core = core::main_loop(core, core_duplex);
+    // let _core = core::main_loop(core, core_duplex);
     // app.start();
     event_handler.run(app, event_loop, app_receiver);
 

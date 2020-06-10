@@ -2,10 +2,11 @@
 #![allow(unused_variables)]
 #![allow(unused_imports)]
 // @TODO: remove
-#![feature(backtrace)]
+// #![feature(backtrace)]
 
 extern crate thiserror;
-extern crate euclid;
+extern crate pathfinder_geometry;
+// extern crate euclid;
 extern crate glutin;
 extern crate gl;
 
