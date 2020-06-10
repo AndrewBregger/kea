@@ -1,7 +1,7 @@
 use super::platform::shader::{RectShader, Shader, TextShader};
 use super::{Color, Rect, RenderError, vec4, Vector4D, platform};
 use crate::glutin::dpi::{LogicalPosition, LogicalSize};
-use crate::font::{self, FontDesc, GlyphId, FontMetrics};
+use crate::font::{self, Font, FontDesc, GlyphId, FontMetrics};
 // use crate::euclid::vec2;
 use crate::pathfinder_geometry::{vector::vec2f};
 use platform::atlas::{Atlas, FontAtlas};
@@ -374,9 +374,11 @@ impl Renderer {
     /// Each frame the string will be reprocessed.
     //  this should be use for string that change regularly (such as status bar)
     //  uses the atlas for layout font information.
-    pub fn render_str(&mut self, s: &str, mut x: f32, mut y: f32, fg_color: Color, bg_color: Color, desc: FontDesc, size: f32) {
+    pub fn render_str(&mut self, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, font: &Font, size: f32) {
+    //pub fn render_str(&mut self, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, desc: FontDesc, size: f32) {
 
-        let metrics = self.font_metrics.get(&desc).expect("requesting metrics for unknown font").scale_with(size, self.atlas.dpi_factor());
+        // let metrics = self.font_metrics.get(&desc).expect("requesting metrics for unknown font").scale_with(size, self.atlas.dpi_factor());
+        let metrics = font.metrics().scale_with(size, self.atlas.dpi_factor());
 
         // this will make the vector longer then it needs to be
         let mut glyphs = Vec::with_capacity(s.len());
@@ -389,7 +391,7 @@ impl Renderer {
         let mut highlight_width = 0.0;
         let mut hightlight_start = 0.0;
         for (idx, c) in s.chars().enumerate() {
-            let glyph_id = GlyphId::new(c, size,desc.clone());
+            let glyph_id = GlyphId::new(c, size, font.desc().clone());
             if c == '\n' {
                 lines += 1;
                 // debug!("Unable to access line height from renderer");

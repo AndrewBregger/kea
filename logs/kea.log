@@ -1,0 +1,172 @@
+[2020-06-09][17:21:14][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][17:21:14][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][17:21:14][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][17:40:55][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][17:40:55][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][17:40:55][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][17:40:55][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-09][17:41:50][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][17:41:50][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][17:41:50][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][17:41:50][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-09][17:43:28][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][17:43:28][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][17:43:28][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][17:43:28][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-09][17:43:51][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][17:43:51][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][17:43:51][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][17:43:51][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-09][17:44:38][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][17:44:38][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][17:44:38][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][17:49:25][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][17:49:25][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][17:49:25][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][19:47:24][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][19:47:24][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][19:47:24][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][20:12:04][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][20:12:04][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][20:12:04][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][20:13:07][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][20:13:07][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][20:13:07][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][20:21:14][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][20:21:14][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][20:21:14][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][20:25:16][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][20:25:16][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][20:25:16][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][20:29:04][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][20:29:04][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][20:29:04][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][20:29:04][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-09][20:36:59][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-09][20:36:59][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-09][20:36:59][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-09][20:36:59][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][15:31:13][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][15:31:13][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-10][15:31:13][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-10][15:31:13][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][15:46:47][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][15:46:47][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-10][15:46:47][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-10][15:46:47][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][16:12:12][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][16:12:12][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-10][16:12:12][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-10][16:12:12][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][16:45:15][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][16:45:15][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
+[2020-06-10][16:45:15][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
+[2020-06-10][16:45:15][kea::renderer::renderer][INFO] Setting Renderers Font Atlas

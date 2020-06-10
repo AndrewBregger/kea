@@ -11,6 +11,7 @@ use crate::pathfinder_geometry::vector::{Vector2F, vec2f};
 use crate::renderer::{Renderer, Window, window::LogicalSize, Rect, Color};
 use crate::core::{self, KeaCore, Edit, Update};
 use crate::ui::*;
+use crate::font::{Font, FontCollection};
 use kea::comm::{Duplex, duplex, channel, Sender};
 use super::{Config, AppEvent, AppError};
 
@@ -60,10 +61,12 @@ pub struct Application {
     frames: BTreeMap<FrameId, Box<()>>,
     /// how the frames are positioned on the screen
     layout: FrameLayout,
+    /// a collection of all of the raw font data needed by the application.
+    font_collection: FontCollection,
 }
 
 impl Application {
-    pub fn with_config(context: Renderer, window: Window<PossiblyCurrent>, sender: Sender<Edit>, config: Config) -> Result<Self, super::AppError> {
+    pub fn with_config(context: Renderer, window: Window<PossiblyCurrent>, sender: Sender<Edit>, font_collection: FontCollection, config: Config) -> Result<Self, super::AppError> {
         let el = EventLoop::<AppEvent>::with_user_event();
 
 
@@ -76,6 +79,7 @@ impl Application {
             config,
             frames: BTreeMap::new(),
             layout: FrameLayout::new(),
+            font_collection
         })
     }
 
@@ -89,7 +93,7 @@ impl Application {
         if self.draw_requested {
             self.renderer.clear();
 
-            self.renderer.render_str("Hello, World", 300f32, 10f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.config.font_desc(), self.config.font_size());
+            self.renderer.render_str("Hello, World", 300f32, 10f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.font_collection.default_font(), self.config.font_size());
 
             self.renderer.flush();
             self.window.swap_buffers();

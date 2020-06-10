@@ -73,14 +73,14 @@ pub fn run(config: Config) -> Result<(), AppError> {
 
     renderer.set_atlas(font_atlas);
     println!("{}", font_collection.num_fonts());
-    for idx in 0..font_collection.num_fonts() {
-        if let Some(font) = font_collection.font_at(idx) {
-            renderer.add_font_metric(font.desc().clone(), font.font_metrics().unwrap_or(FontMetrics::new(0., 0., 0., 0., 0., 0.)))
-        }
-        else  {
-            println!("Failed to find the font at index: {}", idx);
-        }
-    }
+    //for idx in 0..font_collection.num_fonts() {
+    //    if let Some(font) = font_collection.font_at(idx) {
+    //        renderer.add_font_metric(font.desc().clone(), font.font_metrics().unwrap_or(FontMetrics::new(0., 0., 0., 0., 0., 0.)))
+    //    }
+    //    else  {
+    //        println!("Failed to find the font at index: {}", idx);
+    //    }
+    //}
 
     let (width, height) = window.get_size().into();
     renderer.update_perspective(width, height);
@@ -91,7 +91,7 @@ pub fn run(config: Config) -> Result<(), AppError> {
     let elp = event_loop.create_proxy();
     let mut event_handler = EventHandler::new(elp);
 
-    let app = Application::with_config(renderer, window, app_sender, config)?;
+    let app = Application::with_config(renderer, window, app_sender, font_collection, config)?;
     let app = App::new(app);
     // let _update = application_update_thread(app.weak(), app_receiver);
 

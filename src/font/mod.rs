@@ -6,7 +6,7 @@ use crate::pathfinder_geometry;
 pub use font_kit::canvas::{Canvas, Format, RasterizationOptions};
 pub use font_kit::family_name::FamilyName;
 pub use font_kit::font;
-pub use font_kit::properties::Properties;
+pub use font_kit::properties::{Properties, Weight, Style, Stretch};
 pub use font_kit::hinting::HintingOptions;
 
 pub use font_kit::error;
@@ -196,6 +196,10 @@ pub struct GlyphId {
 }
 
 impl FontCollection {
+	pub const DEFAULT_FONT: usize = 0;
+	pub const DEFAULT_ITALIC_FONT: usize = 1;
+	pub const DEFAULT_BOLD_FONT: usize = 2;
+
     pub fn new(device_pixel_ratio: f32) -> Result<Self, FontError> {
         Ok(Self {
             fonts: Vec::new(),
@@ -211,6 +215,33 @@ impl FontCollection {
 
     pub fn find_font(&self, desc: FontDesc) -> Option<&Font> {
         self.fonts.iter().find(|&font| font.desc == desc)
+    }
+
+    pub fn add_font_by_name(&mut self, name: &str) -> Result<(), FontError> {
+        // add normal,
+
+		let normal = FontDesc::new(name, Properties::new());
+		self.add_font(normal)?;
+
+        // add italic,
+        let italic_prop = Properties {
+            style: Style::Italic,
+            weight: Weight::NORMAL,
+            stretch: Stretch::NORMAL,
+        };
+		let italic = FontDesc::new(name, italic_prop);
+		self.add_font(italic)?;
+
+        // add bold
+        let bold_prop = Properties {
+            style: Style::Normal,
+            weight: Weight::BOLD,
+            stretch: Stretch::NORMAL,
+        };
+		let bold = FontDesc::new(name, bold_prop);
+		self.add_font(bold)?;
+
+		Ok(())
     }
 
     pub fn add_font(&mut self, desc: FontDesc) -> Result<(), FontError> {
@@ -238,6 +269,18 @@ impl FontCollection {
         }
     }
 
+    pub fn default_font(&self) -> &Font {
+        unsafe { self.fonts.get_unchecked(Self::DEFAULT_FONT) }
+    }
+
+    pub fn default_italicfont(&self) -> &Font {
+        unsafe { self.fonts.get_unchecked(Self::DEFAULT_ITALIC_FONT) }
+    }
+
+    pub fn default_bold_font(&self) -> &Font {
+        unsafe { self.fonts.get_unchecked(Self::DEFAULT_BOLD_FONT) }
+    }
+
     pub fn num_fonts(&self) -> usize {
         self.fonts.len()
     }
@@ -247,18 +290,20 @@ impl FontCollection {
     }
 
     pub fn add_default(&mut self) {
-        let desc = if cfg!(target_os = "win32") {
-          	FontDesc::new("Courier New", Properties::new())
+        let family_name = if cfg!(target_os = "win32") {
+          	"Courier New"
         }
         else if cfg!(target_os = "macos") {
-          	FontDesc::new("Menlo", Properties::new())
+            "Menlo"
         }
         else {
-          	FontDesc::new("Deja Vu Sans", Properties::new())
+          	"Deja Vu Sans"
         };
 
-        self.add_font(desc).expect("failed to find default font");
+        self.add_font_by_name(family_name).expect("failed to find default font");
     }
+
+    
 }
 
 impl GlyphId {
@@ -322,7 +367,7 @@ impl Font {
         &self.desc
     }
 
-    pub fn font_metrics(&self) -> Result<FontMetrics, FontError> {
+    pub fn metrics(&self) -> FontMetrics {
 
         // let metrics = self.source.size_metrics().ok_or(FontError::InvalidFontMetrics { font: self.desc.clone() })?;
         let metrics = self.source.metrics();
@@ -331,17 +376,17 @@ impl Font {
         let height  = metrics.x_height as f32;
         let ascent  = metrics.ascent as f32;
         let descent = metrics.descent as f32;
-        let ppem = metrics.units_per_em as f32;
+        let ppem    = metrics.units_per_em as f32;
 
 
-        Ok(FontMetrics {
+        FontMetrics {
             x_ppem: 0.0,
             y_ppem: 0.0,
             ppem,
             ascent,
             descent,
             line_gap: height + descent - ascent,
-        })
+        }
     }
 
     pub fn get_glyph_index(&self, codepoint: char) -> Option<u32> {
