@@ -14,7 +14,7 @@ use std::{hash::Hasher,
           io::{Read, BufReader},
           sync::Arc,
           collections::HashMap};
-use pathfinder_geometry::{vector::{Vector2F, Vector2I}, transform2d::Transform2F};
+use pathfinder_geometry::{vector::{Vector2F, Vector2I, vec2i, vec2f}, transform2d::Transform2F};
 use std::str;
 
 #[derive(Debug, thiserror::Error)]
@@ -135,6 +135,10 @@ impl FontMetrics {
     pub fn scale_with(&self, height: f32, dpi: f32) -> ScaledFontMetrics {
         let scale = Font::scale_size(height, dpi) / self.ppem;
         self.scale(scale)
+    }
+
+    pub fn line_height(&self) -> f32 {
+        self.ascent - self.descent + self.line_gap
     }
 }
 
@@ -303,7 +307,7 @@ impl FontCollection {
         self.add_font_by_name(family_name).expect("failed to find default font");
     }
 
-    
+
 }
 
 impl GlyphId {
@@ -401,6 +405,9 @@ impl Font {
 		//println!("Char: {}", codepoint);
         let glyph = GlyphId::new(codepoint, height, self.desc.clone());
         let height = glyph.scale_size(self.device_pixel_ratio);
+        let metrics = self.source.metrics();
+        let scale = Self::scale_size(height, self.device_pixel_ratio) / metrics.units_per_em as f32;
+
         if let Some(glyph_id) = self.get_glyph_index(codepoint) {
             let bounding_box = self.source.raster_bounds(glyph_id, height, Transform2F::default(), HintingOptions::None, RasterizationOptions::SubpixelAa)
             	.unwrap();
@@ -411,30 +418,40 @@ impl Font {
                 			glyph_id,
                 			height,
                 			Transform2F::from_translation(-bounding_box.origin().to_f32()),
-                			HintingOptions::None,
+                            // Transform2F::default(),
+                            HintingOptions::None,
                 			RasterizationOptions::SubpixelAa)
                 		.map_err(|err| FontError::GlyphError { ch: codepoint, err })?;
-			let advance = self.source.advance(glyph_id).map_err(|err| FontError::GlyphError { ch: codepoint, err })?;
+			let advance = self.source.advance(glyph_id).map_err(|err| FontError::GlyphError { ch: codepoint, err })?; //.to_i32();
+            let advance = vec2f(advance.x() * scale, advance.y() * scale);
+
+            let mut temp_buffer = Vec::new();
+
+            for i in 0..canvas.size.y() {
+                let start = i as usize * canvas.stride;
+                let end = (i as usize + 1) * canvas.stride;
+                let row = &canvas.pixels[start..end];
+                temp_buffer.push(row);
+            }
+            let origin = self.source.origin(glyph_id).unwrap();
+            // let origin = vec2f((origin.x() >> 6) as f32, (origin.y() >> 6) as f32);
+            let origin = vec2f(origin.x() * scale, (origin.y() - metrics.descent) * scale);
+            // let origin = self.source.og
+            println!("Char: {} Bounding Box: {:#?} Origin: {:#?} Size: {:#?} Other Origin: {:#?}", codepoint, bounding_box, bounding_box.origin(), bounding_box.size(), origin);
 
             Ok(RasterizedGlyph {
                 glyph,
                 stride: canvas.stride,
                 width: canvas.size.x(),
                 height: canvas.size.y(),
-                origin: bounding_box.origin().to_f32(),
+                origin,
                 advance,
-                bitmap: canvas.pixels,
+                bitmap: temp_buffer.into_iter().rev().flat_map(|e| e.to_vec()).collect(),
             })
         }
         else {
 			Err(FontError::UnsupportedGlyph { ch: codepoint })
         }
-
-
-
-		/*
-         */
-        // unimplemented!()
     }
 
     #[inline]

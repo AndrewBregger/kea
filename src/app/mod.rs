@@ -44,7 +44,7 @@ pub fn run(config: Config) -> Result<(), AppError> {
     let font_desc = config.font_desc();
     let font_size = config.font_size();
 
-    match font_collection.add_font(font_desc) {
+    match font_collection.add_font_by_name(config.font_name()) {
         Ok(_) => {}
         Err(e) => {
             // add status message
@@ -56,8 +56,9 @@ pub fn run(config: Config) -> Result<(), AppError> {
     // the font needs to be loaded on this thread because it cannot be between across thread boundaries.
     let window = window.make_current().map_err(AppError::WindowError)?;
     window.init_gl();
-    
+
     let font_atlas = FontAtlas::from_collection(&font_collection, |atlas, font| {
+        // println!("Loading Font: {:?}", font.desc());
         for c in 32 as u8 .. 127 as u8 {
             let rglyph = font.rasterize_glyph(c as char, font_size)?;
             atlas.add_glyph(&rglyph);
@@ -73,14 +74,15 @@ pub fn run(config: Config) -> Result<(), AppError> {
 
     renderer.set_atlas(font_atlas);
     println!("{}", font_collection.num_fonts());
-    //for idx in 0..font_collection.num_fonts() {
-    //    if let Some(font) = font_collection.font_at(idx) {
-    //        renderer.add_font_metric(font.desc().clone(), font.font_metrics().unwrap_or(FontMetrics::new(0., 0., 0., 0., 0., 0.)))
-    //    }
-    //    else  {
-    //        println!("Failed to find the font at index: {}", idx);
-    //    }
-    //}
+    for idx in 0..font_collection.num_fonts() {
+       if let Some(font) = font_collection.font_at(idx) {
+           // renderer.add_font_metric(font.desc().clone(), font.font_metrics().unwrap_or(FontMetrics::new(0., 0., 0., 0., 0., 0.)))
+           let metric = font.metrics();
+           let lh = metric.line_height();
+           let slh = metric.scale_with(config.font_size(), font_collection.dpi_factor()).line_height();
+           println!("Font {}| Line Hieght: {}, Scaled: {}", idx, lh, slh);
+       }
+    }
 
     let (width, height) = window.get_size().into();
     renderer.update_perspective(width, height);

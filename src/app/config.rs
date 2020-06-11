@@ -36,6 +36,10 @@ impl Config {
         }
     }
 
+    pub fn font_name(&self) -> &str {
+        self.font.family.as_str()
+    }
+
     pub fn font_desc(&self) -> FontDesc {
         FontDesc::new(self.font.family.as_str(), Properties::new())
     }

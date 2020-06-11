@@ -140,6 +140,7 @@ impl FontAtlas {
     fn load_collection<P>(&mut self, collection: &FontCollection, mut loader: P) -> Result<(), font::FontError>
         where P: FnMut(&mut Self, &Font) -> Result<(), font::FontError> {
         for i in 0..collection.num_fonts() {
+            println!("Loading Font index: {}", i);
            match collection.font_at(i) {
                Some(font) => loader(self, font)?,
                _ => {}

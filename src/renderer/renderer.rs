@@ -60,7 +60,7 @@ pub enum SubmitResult {
     /// flushed to allow for the mode to change.
     ChangeMode,
     /// Element was added without error.
-    Ok    
+    Ok
 }
 
 const RECT_QUAD: usize = 4096;
@@ -500,7 +500,7 @@ impl Renderer {
 
     fn flush_text(&self) {
         let vertices = self.text_batch.data.as_slice();
-        let len = self.text_batch.len(); 
+        let len = self.text_batch.len();
         if len == 0 {
             return;
         }

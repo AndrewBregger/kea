@@ -93,7 +93,7 @@ impl Application {
         if self.draw_requested {
             self.renderer.clear();
 
-            self.renderer.render_str("Hello, World", 300f32, 10f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.font_collection.default_font(), self.config.font_size());
+            self.renderer.render_str("\'Hello, World\"", 300f32, 40f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.font_collection.default_font(), self.config.font_size());
 
             self.renderer.flush();
             self.window.swap_buffers();
