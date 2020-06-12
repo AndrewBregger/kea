@@ -74,15 +74,15 @@ pub fn run(config: Config) -> Result<(), AppError> {
 
     renderer.set_atlas(font_atlas);
     println!("{}", font_collection.num_fonts());
-    for idx in 0..font_collection.num_fonts() {
-       if let Some(font) = font_collection.font_at(idx) {
-           // renderer.add_font_metric(font.desc().clone(), font.font_metrics().unwrap_or(FontMetrics::new(0., 0., 0., 0., 0., 0.)))
-           let metric = font.metrics();
-           let lh = metric.line_height();
-           let slh = metric.scale_with(config.font_size(), font_collection.dpi_factor()).line_height();
-           println!("Font {}| Line Hieght: {}, Scaled: {}", idx, lh, slh);
-       }
-    }
+    // for idx in 0..font_collection.num_fonts() {
+       // if let Some(font) = font_collection.font_at(idx) {
+           // // renderer.add_font_metric(font.desc().clone(), font.font_metrics().unwrap_or(FontMetrics::new(0., 0., 0., 0., 0., 0.)))
+           // let metric = font.metrics();
+           // let lh = metric.line_height();
+           // let slh = metric.scale_with(config.font_size(), font_collection.dpi_factor()).line_height();
+           // println!("Metrics: {:?}, SMetrics: {:?} Font {}| Line Hieght: {}, Scaled: {}", metric, metric.scale_with(config.font_size(), font_collection.dpi_factor()), idx, lh, slh);
+       // }
+    // }
 
     let (width, height) = window.get_size().into();
     renderer.update_perspective(width, height);

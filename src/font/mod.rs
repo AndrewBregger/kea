@@ -154,7 +154,7 @@ pub struct ScaledFontMetrics {
 }
 
 impl ScaledFontMetrics {
-    pub fn new(x_ppem: f32, y_ppem: f32, ppem: f32, scale: f32, ascent: f32, descent: f32, line_gap: f32) -> Self {
+    pub fn new(scale: f32, x_ppem: f32, y_ppem: f32, ppem: f32, ascent: f32, descent: f32, line_gap: f32) -> Self {
         Self {
             scale,
             x_ppem,
@@ -301,7 +301,7 @@ impl FontCollection {
             "Menlo"
         }
         else {
-          	"Deja Vu Sans"
+          	"Droid Sans Mono"
         };
 
         self.add_font_by_name(family_name).expect("failed to find default font");
@@ -376,7 +376,6 @@ impl Font {
         // let metrics = self.source.size_metrics().ok_or(FontError::InvalidFontMetrics { font: self.desc.clone() })?;
         let metrics = self.source.metrics();
 
-
         let height  = metrics.x_height as f32;
         let ascent  = metrics.ascent as f32;
         let descent = metrics.descent as f32;
@@ -389,7 +388,7 @@ impl Font {
             ppem,
             ascent,
             descent,
-            line_gap: height + descent - ascent,
+            line_gap: metrics.line_gap,
         }
     }
 
@@ -433,9 +432,17 @@ impl Font {
                 let row = &canvas.pixels[start..end];
                 temp_buffer.push(row);
             }
-            let origin = self.source.origin(glyph_id).unwrap();
-            // let origin = vec2f((origin.x() >> 6) as f32, (origin.y() >> 6) as f32);
-            let origin = vec2f(origin.x() * scale, (origin.y() - metrics.descent) * scale);
+            let origin = if cfg!(target_os = "linux") {
+				bounding_box.origin().to_f32()
+            }
+            else {
+            	let origin = self.source.origin(glyph_id).unwrap();
+            	vec2f(origin.x() * scale, origin.y() * scale)
+            };
+
+            let origin = vec2f(origin.x(), origin.y().abs() - bounding_box.height() as f32);
+
+  //          let origin = vec2f((origin.x() >> 6) as f32, (origin.y() >> 6) as f32);
             // let origin = self.source.og
             println!("Char: {} Bounding Box: {:#?} Origin: {:#?} Size: {:#?} Other Origin: {:#?}", codepoint, bounding_box, bounding_box.origin(), bounding_box.size(), origin);
 
