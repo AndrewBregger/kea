@@ -93,6 +93,10 @@ impl ShallowCache {
     fn len(&self) -> usize {
         self.lines.len()
     }
+
+    fn slice<R: std::slice::SliceIndex<[Line]>>(&self, r: R) -> Option<&<R as std::slice::SliceIndex<[Line]>>::Output> {
+        self.lines.get(r)
+    }
 }
 
 pub struct Buffer {
@@ -175,5 +179,18 @@ impl Buffer {
             let l = self.content.slice(start..end);
             println!("idx: {}, {} {} {}", line.line, start, end, l);
         }
+    }
+
+    pub fn request_lines(&self, start: usize, end: usize) -> Vec<String> {
+        let mut res = Vec::new();
+
+        if let Some(lines) = self.shallow_cache.slice(start..end) {
+    		for line in lines {
+				let val = String::from(self.content.slice(line.start_index()..line.end_index()));
+				res.push(val);
+    		}
+        }
+
+        res
     }
 }

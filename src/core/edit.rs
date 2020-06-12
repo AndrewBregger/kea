@@ -67,6 +67,13 @@ impl Core {
 
 		Ok(buffer_id)
     }
+
+    pub fn request_lines(&self, buffer: BufferId, start: usize, end: usize) -> Vec<String> {
+        if let Some(buffer) = self.buffers.get(&buffer) {
+			buffer.request_lines(start, end)
+        }
+        else { unreachable!() }
+    }
 }
 
 
