@@ -4,9 +4,7 @@ use super::frame::FrameId;
 
 #[derive(Debug, Clone)]
 pub struct FrameInfo {
-    size: Vector2F,
-    origin: Vector2F,
-    frame: FrameId,
+    pub frame: FrameId,
 }
 #[derive(Debug, Clone)]
 pub enum Layout {
@@ -33,5 +31,9 @@ impl FrameLayout {
 
     pub fn get_mut(&mut self, idx: usize) -> Option<&mut Layout> {
         self.layout.get_mut(idx)
+    }
+
+    pub fn push_frame(&mut self, frame_info: FrameInfo) {
+        self.layout.push(Layout::Frame(frame_info));
     }
 }

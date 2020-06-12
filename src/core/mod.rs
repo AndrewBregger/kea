@@ -15,10 +15,9 @@ mod buffer;
 mod view;
 
 use edit::{Core};
-pub use edit::{Update, Edit};
+pub use edit::{Update, Edit, BufferInfo};
 
-
-use buffer::{Buffer, BufferId};
+pub use buffer::{Buffer, BufferId};
 use view::{View};
 pub use view::{ViewInfo, ViewId};
 
@@ -64,37 +63,37 @@ impl WeakCore {
     }
 }
 
-pub fn main_loop(core: KeaCore, duplex: kea::comm::Duplex<Update, Edit>) -> std::thread::JoinHandle<()> {
-    kea::utils::spawn_thread("core", move || {
-        loop  {
-            let edit_operation = match duplex.recv() {
-                Ok(msg) => msg,
-                Err(e) => {
-                    error!("Core Channel Disconnected: {}", e);
-                    panic!();
-                }
-            };
-
-            use Edit::*;
-
-            match edit_operation {
-                OpenFile(view_info) => {
-                    let result = core.inner().open_file(view_info);
-                    match result {
-                        Ok(view) => {
-                            let id = view.view;
-                            duplex.send(Update::View(view)).unwrap();
-
-                            let update = core.inner().update_view(id);
-                            duplex.send(update).unwrap();
-                        }
-                        Err(err) => {
-                            duplex.send(err.into()).unwrap();
-                        }
-                    }
-                },
-                Close => { break; }
-            }
-        }
-    })
-}
+// pub fn main_loop(core: KeaCore, duplex: kea::comm::Duplex<Update, Edit>) -> std::thread::JoinHandle<()> {
+//     kea::utils::spawn_thread("core", move || {
+//         loop  {
+//             let edit_operation = match duplex.recv() {
+//                 Ok(msg) => msg,
+//                 Err(e) => {
+//                     error!("Core Channel Disconnected: {}", e);
+//                     panic!();
+//                 }
+//             };
+// 
+//             use Edit::*;
+// 
+//             match edit_operation {
+//                 OpenFile(view_info) => {
+//                     let result = core.inner().open_file(view_info);
+//                     match result {
+//                         Ok(view) => {
+//                             let id = view.view;
+//                             duplex.send(Update::View(view)).unwrap();
+// 
+//                             let update = core.inner().update_view(id);
+//                             duplex.send(update).unwrap();
+//                         }
+//                         Err(err) => {
+//                             duplex.send(err.into()).unwrap();
+//                         }
+//                     }
+//                 },
+//                 Close => { break; }
+//             }
+//         }
+//     })
+// }

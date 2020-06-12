@@ -58,18 +58,21 @@ pub struct Application {
     /// the current configuration of the application. This should be a global configuration.
     config: Config,
     /// frames this application contains
-    frames: BTreeMap<FrameId, Box<()>>,
+    frames: BTreeMap<FrameId, Frame>,
     /// how the frames are positioned on the screen
     layout: FrameLayout,
+    /// frame actively being interacted with
+    active_frame: Option<FrameId>,
     /// a collection of all of the raw font data needed by the application.
     font_collection: FontCollection,
+	/// the editor core.
+    core: KeaCore,
 }
 
 impl Application {
     pub fn with_config(context: Renderer, window: Window<PossiblyCurrent>, sender: Sender<Edit>, font_collection: FontCollection, config: Config) -> Result<Self, super::AppError> {
         let el = EventLoop::<AppEvent>::with_user_event();
-
-
+        let core = KeaCore::new(&config);
 
         Ok(Self {
             renderer: context,
@@ -79,7 +82,9 @@ impl Application {
             config,
             frames: BTreeMap::new(),
             layout: FrameLayout::new(),
-            font_collection
+            active_frame: None,
+            font_collection,
+            core,
         })
     }
 
@@ -91,15 +96,15 @@ impl Application {
 
     pub fn maybe_render(&mut self) {
         if self.draw_requested {
+
+//            self.renderer.render_str("\'Hello, World\"", 300f32, 40f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.font_collection.default_font(), self.config.font_size());
+
             self.renderer.clear();
-
-            self.renderer.render_str("\'Hello, World\"", 300f32, 40f32, Color::black(), Color::rgb(0.7, 0.7, 0.7), self.font_collection.default_font(), self.config.font_size());
-
+            // render the updated state of the screen.
+			self.render();
             self.renderer.flush();
             self.window.swap_buffers();
 
-            // // render the updated state of the screen.
-            // self.render();
             // flush the rest of the buffer
             self.draw_requested = false;
         }
@@ -112,22 +117,18 @@ impl Application {
     }
 
     pub fn on_init(&mut self) {
-        // let window_size = self.window.get_size();
-        // let size = vec2f(window_size.width as f32, window_size.height as f32);
-        // let origin = Vector2F::zero();
+        let window_size = self.window.get_size();
+        let size = vec2f(window_size.width as f32, window_size.height as f32);
+        let origin = Vector2F::zero();
 
-        // let frame_info = FrameInfo {
-        //     path: Some(PathBuf::from_str("src/main.rs").unwrap()),
-        //     size,
-        // }
+		let buffer_id = self.core.inner().open_file(core::BufferInfo { path: Some(PathBuf::from_str("src/main.rs").unwrap())  }).unwrap();
+		let mut frame = Frame::new(buffer_id, size, origin);
+		frame.set_active(true);
 
-        // for testing. This might be removed or it can be used to initialize the application.
-        // let path = PathBuf::from_str("src/main.rs").unwrap();
-        // let edit = Edit::OpenFile(path);
-        // self.sender.send(edit).unwrap();
+		let frame_id = frame.id();
 
-        // let view_info = core::ViewInfo {};
-        // let view = Edit::NewView(view_info);
-        // self.sender.send(view).unwrap();
+		self.active_frame = Some(frame_id);
+		self.frames.insert(frame_id, frame);
+		self.layout.push_frame(FrameInfo { frame: frame_id });
     }
 }

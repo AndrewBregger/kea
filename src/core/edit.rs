@@ -5,20 +5,13 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::collections::BTreeMap;
 
-use super::{Buffer, BufferId, View, ViewId, ViewInfo};
+use super::{Buffer, BufferId};
 use super::buffer::{BufferResult};
 use super::CoreError;
 
 #[derive(Debug, Clone)]
-pub struct FrameInfo {
-    /// buffer id
+pub struct BufferInfo {
     pub path: Option<PathBuf>,
-    /// the pixel size of the new view
-    pub size: Vector2F,
-    /// the lines to be shown first
-    pub start_line: usize,
-    /// the number of lines show in this view
-    pub lines: usize,
 }
 
 
@@ -42,7 +35,6 @@ impl Counter {
 pub struct Core {
     id_counter: Counter,
     buffers: BTreeMap<BufferId, Box<Buffer>>,
-    views: BTreeMap<ViewId, Box<View>>,
 }
 
 impl Core {
@@ -50,7 +42,6 @@ impl Core {
         Self {
             id_counter: Counter::new(),
             buffers: BTreeMap::new(),
-            views: BTreeMap::new(),
         }
     }
 
@@ -62,19 +53,11 @@ impl Core {
         assert!(self.buffers.insert(buffer.id(), Box::new(buffer)).is_none());
     }
 
-    fn insert_view(&mut self, view: View) {
-        assert!(self.views.insert(view.id(), Box::new(view)).is_none());
-    }
 
-    pub fn update_view(&self, view_id: ViewId) -> Update {
-        unimplemented!()
-    }
-
-    pub fn open_file(&mut self, frame_info: FrameInfo) -> Result<ViewInfo, CoreError> {
-        let FrameInfo { path, size, start_line, lines} = frame_info;
+    pub fn open_file(&mut self, buffer_info: BufferInfo) -> Result<BufferId, CoreError> {
 
         let buffer_id = self.next_id();
-        let buffer = match path {
+        let buffer = match buffer_info.path {
             Some(path) => Buffer::from_path(path, buffer_id),
             None => Buffer::empty(buffer_id),
         }?;
@@ -82,44 +65,16 @@ impl Core {
         let buffer_id = buffer.id();
         self.insert_buffer(buffer);
 
-        let view = View::new(self.next_id(), buffer_id, size, start_line, lines)?;
-        let view_id = view.id();
-        self.insert_view(view);
-
-        Ok(ViewInfo {
-            view: view_id,
-            size,
-            start_line,
-            lines
-        })
+		Ok(buffer_id)
     }
 }
 
 
 #[derive(Debug, Clone)]
 pub enum Edit {
-    /// Opens a new view with a given file
-    OpenFile(FrameInfo),
-    Close,
 }
 
 #[derive(Debug, Clone)]
 pub enum Update {
-    View(ViewInfo),
-    Error(CoreError)
 }
 
-impl Into<Update> for CoreError  {
-    fn into(self) -> Update {
-        Update::Error(self)
-    }
-}
-
-impl Update {
-    pub fn is_err(&self) -> bool {
-        match self {
-            Update::Error(_) => true,
-            _ => false,
-        }
-    }
-}
