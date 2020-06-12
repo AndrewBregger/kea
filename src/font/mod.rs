@@ -432,19 +432,9 @@ impl Font {
                 let row = &canvas.pixels[start..end];
                 temp_buffer.push(row);
             }
-            let origin = if cfg!(target_os = "linux") {
-				bounding_box.origin().to_f32()
-            }
-            else {
-            	let origin = self.source.origin(glyph_id).unwrap();
-            	vec2f(origin.x() * scale, origin.y() * scale)
-            };
 
+            let origin = bounding_box.origin().to_f32();
             let origin = vec2f(origin.x(), origin.y().abs() - bounding_box.height() as f32);
-
-  //          let origin = vec2f((origin.x() >> 6) as f32, (origin.y() >> 6) as f32);
-            // let origin = self.source.og
-            println!("Char: {} Bounding Box: {:#?} Origin: {:#?} Size: {:#?} Other Origin: {:#?}", codepoint, bounding_box, bounding_box.origin(), bounding_box.size(), origin);
 
             Ok(RasterizedGlyph {
                 glyph,
