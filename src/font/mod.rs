@@ -138,7 +138,7 @@ impl FontMetrics {
     }
 
     pub fn line_height(&self) -> f32 {
-        self.ascent - self.descent + self.line_gap
+        (self.ascent - self.descent + self.line_gap).ceil()
     }
 }
 
@@ -172,7 +172,7 @@ impl ScaledFontMetrics {
 
 
     pub fn line_height(&self) -> f32 {
-        self.ascent - self.descent + self.line_gap
+        (self.ascent - self.descent + self.line_gap).ceil()
     }
 }
 
