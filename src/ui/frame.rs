@@ -13,7 +13,7 @@ use log::error;
 #[derive(Debug, Clone, Copy, Hash, Ord, PartialOrd, Eq, PartialEq)]
 pub struct FrameId(usize);
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct T {}
 
 /// schemas for how the buffer can be invalidated
@@ -87,6 +87,8 @@ impl Frame {
 		for (idx, line) in lines.into_iter().enumerate() {
 			self.set_line(idx, Text::from_string(idx + 1, line));
 		}
+
+		println!("{:#?}", self.cache);
 	}
 
 	fn set_line(&mut self, line_idx: usize, text: Text<T>) {

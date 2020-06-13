@@ -74,6 +74,14 @@ impl Core {
         }
         else { unreachable!() }
     }
+
+	/// retreives the buffer of the given id.
+	/// note: Because a buffer id can only be created
+	/// 	  here, is is impossible for an invalid
+	/// 	  id to be given.
+    pub fn get_buffer(&self, id: &BufferId) -> Option<&Box<Buffer>> {
+		self.buffers.get(id)
+    }
 }
 
 

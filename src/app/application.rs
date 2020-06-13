@@ -125,9 +125,19 @@ impl Application {
         	.metrics()
         	.scale_with(self.config.font_size(), self.window.dpi_factor() as f32);
 
-		let buffer_id = self.core.inner().open_file(core::BufferInfo { path: Some(PathBuf::from_str("src/main.rs").unwrap())  }).unwrap();
+		let mut core = self.core.inner();
+
+		let buffer_id = core.open_file(core::BufferInfo { path: Some(PathBuf::from_str("src/main.rs").unwrap())  }).unwrap();
+		let buffer = core.get_buffer(&buffer_id).unwrap();
+
 		let mut frame = Frame::new(buffer_id, size, origin, metrics);
+		frame.update_line_cache(Invalidation::Init, buffer);
+
 		frame.set_active(true);
+
+
+
+
 
 		let frame_id = frame.id();
 
