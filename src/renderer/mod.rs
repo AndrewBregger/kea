@@ -44,6 +44,10 @@ impl<T: Copy + PartialEq> Vector4D<T> {
     }
 }
 
+pub trait Renderable {
+    fn render(&self, renderer: &mut Renderer);
+}
+
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum RenderError {
     #[error("Failed to crate ibo")]
