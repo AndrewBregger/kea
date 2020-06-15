@@ -11,7 +11,7 @@ use std::ptr;
 use std::str;
 
 use crate::renderer::RenderError;
-use crate::renderer::Vector4D;
+use crate::renderer::Vector4F;
 use pathfinder_geometry::transform3d::Transform4F;
 
 pub fn load_file<P: AsRef<std::path::Path>>(filename: P) -> String {

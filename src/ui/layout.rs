@@ -18,6 +18,12 @@ pub struct FrameLayout {
     layout: Vec<Layout>
 }
 
+pub struct FrameIter<'a> {
+    // parent: usize,
+    // idx: usize,
+    layout: std::slice::Iter<'a, Layout>
+}
+
 impl FrameLayout {
     pub fn new() -> Self {
         Self {
@@ -35,5 +41,44 @@ impl FrameLayout {
 
     pub fn push_frame(&mut self, frame_info: FrameInfo) {
         self.layout.push(Layout::Frame(frame_info));
+    }
+
+    pub fn frame_iter(&self) -> FrameIter {
+        FrameIter {
+                // parent: 0,
+                // idx: 0,
+                layout: self.layout.iter()
+        }
+    }
+}
+
+impl<'a> FrameIter<'a> {
+
+}
+
+impl<'a> std::iter::Iterator for FrameIter<'a> {
+    type Item = &'a FrameInfo;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        use Layout::*;
+        loop {
+            match self.layout.next() {
+                Some(layout) => match layout {
+                    Vertical | Horizontal => {
+                        continue
+                    }
+                    Frame(info) => {
+                        // if self.idx == self.parent * 2 + 1 {
+                        //     self.idx = self.parent * 2 + 2;
+                        // }
+                        // else if self.idx == self.parent * 2 + 2 {
+                        //     self.parent =
+                        // }
+                        return Some(info);
+                    }
+                }
+                None => return None,
+            }
+        }
     }
 }

@@ -80,9 +80,9 @@ pub fn run(config: Config) -> Result<(), AppError> {
     // let core = KeaCore::new(&config);
 
     let elp = event_loop.create_proxy();
-    let mut event_handler = EventHandler::new(elp);
+    let mut event_handler = EventHandler::new(renderer, elp);
 
-    let app = Application::with_config(renderer, window, app_sender, font_collection, config)?;
+    let app = Application::with_config(window, app_sender, font_collection, config)?;
     let app = App::new(app);
     // let _update = application_update_thread(app.weak(), app_receiver);
 

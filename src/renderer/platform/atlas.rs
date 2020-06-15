@@ -5,7 +5,7 @@
 use crate::font::{self, FontDesc, GlyphId, RasterizedGlyph, FontMetrics, FontCollection, Font};
 use crate::gl::{self, types::*};
 use std::collections::HashMap;
-use crate::renderer::Vector4D;
+use crate::renderer::Vector4F;
 // use euclid::{default::Vector2D, vec2};
 use crate::pathfinder_geometry::vector::{vec2f, Vector2F, Vector2I};
 type AtlasSize = (i32, i32);

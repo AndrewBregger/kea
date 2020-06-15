@@ -1,5 +1,5 @@
 use super::platform::shader::{RectShader, Shader, TextShader};
-use super::{Color, Rect, RenderError, vec4, Vector4D, platform};
+use super::{Color, Rect, RenderError, vec4, Vector4F, platform};
 use crate::glutin::dpi::{LogicalPosition, LogicalSize};
 use crate::font::{self, Font, FontDesc, GlyphId, FontMetrics};
 // use crate::euclid::vec2;
@@ -73,12 +73,12 @@ pub trait Vertex {}
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct RectVertex {
-    pub vertex: Vector4D<f32>,
+    pub vertex: Vector4F,
     pub bg_color: Color,
 }
 
 impl RectVertex {
-    fn create(vertex: Vector4D<f32>, bg_color: Color) -> Self {
+    fn create(vertex: Vector4F, bg_color: Color) -> Self {
         Self {
             vertex,
             bg_color,
@@ -98,14 +98,14 @@ impl Default for RectVertex {
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct TextVertex {
-    pub vertex: Vector4D<f32>,
+    pub vertex: Vector4F,
     pub fg_color: Color,
-    pub tex_info: Vector4D<f32>,
+    pub tex_info: Vector4F,
     pub texture_id: f32,
 }
 
 impl TextVertex {
-    fn create(vertex: Vector4D<f32>, fg_color: Color, tex_info: Vector4D<f32>, texture_id: f32) -> Self {
+    fn create(vertex: Vector4F, fg_color: Color, tex_info: Vector4F, texture_id: f32) -> Self {
         Self {
             vertex,
             fg_color,
@@ -418,13 +418,13 @@ impl Renderer {
                 }
             }
         }
-
-        let bg_height = lines as f32 * metrics.line_height();
-        let rect= Rect::with_position(vec2f(start_x, start_y + metrics.descent), width, bg_height).with_color(bg_color);
-        self.render_rect(&rect);
-
-        let rect= Rect::with_position(vec2f(hightlight_start, start_y + metrics.descent), highlight_width, metrics.line_height()).with_color(Color::rgba(1.0, 0.8, 0.0, 0.6));
-        self.render_rect(&rect);
+        //
+        // let bg_height = lines as f32 * metrics.line_height();
+        // let rect= Rect::with_position(vec2f(start_x, start_y + metrics.descent), width, bg_height).with_color(bg_color);
+        // self.render_rect(&rect);
+        //
+        // let rect= Rect::with_position(vec2f(hightlight_start, start_y + metrics.descent), highlight_width, metrics.line_height()).with_color(Color::rgba(1.0, 0.8, 0.0, 0.6));
+        // self.render_rect(&rect);
 
         glyphs.iter().for_each(|v| self.submit_character(v));
     }

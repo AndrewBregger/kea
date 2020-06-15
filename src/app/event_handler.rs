@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::mpsc::Receiver;
 
-use crate::renderer::Window;
+use crate::renderer::{Window, Renderer, Renderable};
 use super::{App, Application};
 use crate::core::Update;
 
@@ -45,6 +45,7 @@ pub enum ClickState {
 // }
 
 pub struct EventHandler {
+    pub renderer: Renderer,
     pub elp: event_loop::EventLoopProxy<AppEvent>,
     pub modifiers: event::ModifiersState,
     // pub mouse: Mouse,
@@ -52,8 +53,9 @@ pub struct EventHandler {
 
 impl EventHandler {
 
-    pub fn new(elp: event_loop::EventLoopProxy<AppEvent>) -> Self {
+    pub fn new(renderer: Renderer, elp: event_loop::EventLoopProxy<AppEvent>) -> Self {
         Self {
+            renderer,
             elp,
             modifiers: event::ModifiersState::empty(),
         }
@@ -206,7 +208,14 @@ impl EventHandler {
                 Self::handle_event(event, self, &mut guard);
             }
 
-            guard.maybe_render();
+            if guard.draw_requested() {
+                self.renderer.clear();
+
+                guard.render(&mut self.renderer);
+
+                self.renderer.flush();
+                guard.swap_buffer();
+            }
         });
     }
 }

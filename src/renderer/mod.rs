@@ -6,6 +6,7 @@ mod rect;
 mod color;
 pub mod platform;
 mod renderer;
+pub mod style;
 
 pub use window::Window;
 pub use color::Color;
@@ -16,19 +17,20 @@ use crate::gl::{self, types::*};
 use log::{error, info, debug};
 // use euclid::default::Transform3D;
 use crate::font::{FontCollection, Font};
+use crate::ui::style::StyleId;
 use pathfinder_geometry::transform3d::Transform4F;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct Vector4D<T: Copy + PartialEq> {
-    pub x: T,
-    pub y: T,
-    pub z: T,
-    pub w: T, 
+pub struct Vector4F {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub w: f32,
 }
 
-pub fn vec4<T: Copy + PartialEq>(x: T, y: T, z: T, w: T) -> Vector4D<T> {
-    Vector4D {
+pub fn vec4(x: f32, y: f32, z: f32, w: f32) -> Vector4F {
+    Vector4F {
         x,
         y,
         z,
@@ -37,15 +39,14 @@ pub fn vec4<T: Copy + PartialEq>(x: T, y: T, z: T, w: T) -> Vector4D<T> {
 
 }
 
-
-impl<T: Copy + PartialEq> Vector4D<T> {
-    pub unsafe fn as_ptr(&self) -> *const T {
+impl Vector4F {
+    pub unsafe fn as_ptr(&self) -> *const f32 {
         &self.x
     }
 }
 
 pub trait Renderable {
-    fn render(&self, renderer: &mut Renderer);
+    fn render(&mut self, renderer: &mut Renderer);
 }
 
 #[derive(thiserror::Error, Debug, Clone)]
@@ -58,15 +59,11 @@ pub enum RenderError {
     RectInitFailed,
 }
 
-/// The expected messages to be received from the main thread.
-// #[derive(Debug, Clone, Copy)]
-// pub enum RMessage {
-//     Flush,
-//     WindowResize(u32, u32),
-//     Finalize,
-//     Clear,
-//     Exit,
-// }
+#[derive(Debug, Clone, Copy)]
+pub struct TextLine {
+    style: StyleId,
+    ch: char,
+}
 
 // An interface to the rendered used by the rest of the system
 // pub struct RenderContext(Weak<Mutex<Renderer>>);

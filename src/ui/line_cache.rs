@@ -1,18 +1,25 @@
 use crate::renderer::Renderable;
+use super::style::{StyleSpan};
 use log::error;
 
 #[derive(Debug, Clone)]
 pub struct Text<T> {
     /// the value
-    text: String,
+    pub text: String,
     /// the line number of this line in the text buffer.
-    line_number: usize,
+    pub line_number: usize,
     /// is this line a visual line.
-    visual_line: bool,
+    pub visual_line: bool,
     /// optionally generated render data for this text
-	assoc: Option<T>,
+	pub assoc: Option<T>,
 	/// the location of any cursors in this line.
-	cursors: Vec<usize>
+	pub cursors: Vec<usize>,
+    /// a list of styles to be used on text.
+    /// the spans should be ordered and non overlapping. (if overlapping then the latter
+    /// style will be used).
+    // Ideally, the entire string should be represented by the spans but if parts are missing
+    // then a default style will be used.
+    pub styles: Vec<StyleSpan>
 }
 
 impl<T> Text<T> {
@@ -26,9 +33,14 @@ impl<T> Text<T> {
         	line_number,
         	visual_line,
         	assoc,
-        	cursors
+        	cursors,
+            styles: Vec::new(),
     	}
 	}
+
+    pub fn set_assoc(&mut self, assoc: T) {
+        self.assoc = Some(assoc);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -51,4 +63,12 @@ impl<T: Clone> LineCache<T> {
         	error!("Requesting invalid line cache index: {} cache of size: {}", idx, self.lines.len());
     	}
 	}
+
+    pub fn lines(&self) -> &[Option<Text<T>>] {
+        self.lines.as_slice()
+    }
+
+    pub fn lines_mut(&mut self) -> &mut [Option<Text<T>>] {
+        self.lines.as_mut_slice()
+    }
 }
