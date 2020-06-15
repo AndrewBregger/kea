@@ -1,14 +1,17 @@
+use std::collections::HashMap;
+
 use super::platform::shader::{RectShader, Shader, TextShader};
-use super::{Color, Rect, RenderError, vec4, Vector4F, platform};
+use super::{Color, Rect, RenderError, vec4, Vector4F, platform, TextLine, Glyph};
+use super::style::{self, Style, StyleMap};
 use crate::glutin::dpi::{LogicalPosition, LogicalSize};
-use crate::font::{self, Font, FontDesc, GlyphId, FontMetrics};
+use crate::font::{self, Font, FontDesc, GlyphId, FontMetrics, FontCollection};
+
 // use crate::euclid::vec2;
 use crate::pathfinder_geometry::{vector::vec2f};
 use platform::atlas::{Atlas, FontAtlas};
-use std::collections::HashMap;
+use pathfinder_geometry::transform3d::Transform4F;
 
 use log::{debug, info};
-use pathfinder_geometry::transform3d::Transform4F;
 
 
 
@@ -167,6 +170,47 @@ fn generate_indices() -> Vec<u32> {
     vec![0, 1, 2, 0, 2, 3]
 }
 
+/// auxiliary render information.
+/// From a design standpoint, I wasn't sure exactly where
+/// the information stored in this struct should actually be stored
+/// to I made this.
+pub struct RenderContext {
+    style_map: StyleMap,
+    font_collection: FontCollection,
+}
+
+impl RenderContext {
+
+    pub fn new(collection: FontCollection) -> RenderContext {
+        let mut context = Self {
+            style_map: StyleMap::new(),
+            font_collection: collection,
+        };
+
+        // temporary until real color themes are implemented.
+        let normal = Style::new(0, Color::black(), Color::white(), false, false);
+        let italic = Style::new(1, Color::black(), Color::white(), true, false);
+        let bold   = Style::new(2, Color::black(), Color::white(), false, true);
+
+        context.register_style(normal);
+        context.register_style(italic);
+        context.register_style(bold);
+
+        context
+    }
+
+    #[inline]
+    pub fn register_style(&mut self, style: Style) {
+        self.style_map.register_style(style);
+    }
+
+    #[inline]
+    pub fn fonts(&self) -> &FontCollection {
+        &self.font_collection
+    }
+}
+
+
 /// Maintains information needed to render
 pub struct Renderer {
     textures: Vec<u32>,
@@ -175,14 +219,15 @@ pub struct Renderer {
     rect_vbo: u32,
     text_vao: u32,
     text_vbo: u32,
-
     ibo: u32,
+
     rect_batch: Batch<RectVertex>,
     text_batch: Batch<TextVertex>,
+
     rect_shader: RectShader,
-    pub(crate) text_shader: TextShader,
+    text_shader: TextShader,
+
     atlas: FontAtlas,
-    font_metrics: HashMap<FontDesc, FontMetrics>
 }
 
 impl Renderer {
@@ -201,9 +246,9 @@ impl Renderer {
             rect_shader: RectShader::create(),
             text_shader: TextShader::create(),
             atlas: FontAtlas::new(0.0),
-            font_metrics: HashMap::new(),
         }
     }
+
 
     pub fn init(&mut self) -> Result<(), RenderError> {
 
@@ -354,10 +399,6 @@ impl Renderer {
         self.text_shader.unbind();
     }
 
-    pub fn add_font_metric(&mut self, desc: FontDesc, metric: FontMetrics) {
-        self.font_metrics.insert(desc, metric);
-    }
-
     pub fn set_perspective(&self, perf: &Transform4F) {
         self.rect_shader.bounded(|shader| shader.set_perspective(perf));
         self.text_shader.bounded(|shader| shader.set_perspective(perf));
@@ -365,7 +406,7 @@ impl Renderer {
 
 
     /// renders a Rect
-    pub fn render_rect(&mut self, rect: &Rect) {
+    pub fn render_rect(&mut self, _context: &RenderContext, rect: &Rect) {
         let vertex = RectVertex::create(vec4(rect.pos.x(), rect.pos.y(), rect.width, rect.height), rect.bg_color);
         self.submit_rect(&vertex);
     }
@@ -374,7 +415,8 @@ impl Renderer {
     /// Each frame the string will be reprocessed.
     //  this should be use for string that change regularly (such as status bar)
     //  uses the atlas for layout font information.
-    pub fn render_str(&mut self, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, font: &Font, size: f32) {
+    pub fn render_str(&mut self, context: &RenderContext, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, size: f32) {
+        let font = context.font_collection.default_font();
     //pub fn render_str(&mut self, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, desc: FontDesc, size: f32) {
 
         // let metrics = self.font_metrics.get(&desc).expect("requesting metrics for unknown font").scale_with(size, self.atlas.dpi_factor());
@@ -387,14 +429,10 @@ impl Renderer {
         let start_x = x;
         let start_y = y;
 
-        // hack
-        let mut highlight_width = 0.0;
-        let mut hightlight_start = 0.0;
         for (idx, c) in s.chars().enumerate() {
             let glyph_id = GlyphId::new(c, size, font.desc().clone());
             if c == '\n' {
                 lines += 1;
-                // debug!("Unable to access line height from renderer");
                 continue;
             }
 
@@ -408,14 +446,6 @@ impl Renderer {
 
                 x += info.advance.x();
                 width += info.advance.x();
-
-                // hack
-                if 3 <= idx && idx <= 8 {
-                    if idx == 3 {
-                        hightlight_start = x;
-                    }
-                    highlight_width += info.advance.x();
-                }
             }
         }
         //
@@ -427,6 +457,47 @@ impl Renderer {
         // self.render_rect(&rect);
 
         glyphs.iter().for_each(|v| self.submit_character(v));
+    }
+
+    pub fn render_line(&mut self, context: &RenderContext, line: &TextLine, x: f32, y: f32, size: f32) {
+        let glyphs = line.glyphs.as_slice();
+        for style in line.styles.as_slice() {
+            let span = style.span();
+            let id = style.style();
+
+            if let Some(style) = context.style_map.style(&id) {
+                let font = context.font_collection.font_at(style.font_idx()).unwrap();
+
+                let glyph_span = glyphs.get(span.start..span.end).unwrap();
+                for glyph in glyph_span {
+                    let glyph_id = GlyphId::new(glyph.ch, size, font.desc.clone());
+                    if let Some(info) = self.atlas.get_info(&glyph_id) {
+                        let vertex = TextVertex::create(
+                            vec4(x + glyph.x + info.origin.x(), y + info.origin.y(), info.size.x(), info.size.y()),
+                            style.text_color().clone(),
+                            info.tex_info(),
+                            info.tex as f32);
+
+                        self.submit_character(&vertex);
+                    }
+                }
+            }
+            else { println!("Failed to find style: {:?}", id); }
+        }
+    }
+
+    pub fn render_cursors(&mut self, context: &RenderContext, line: &TextLine, cursors: &[usize], y: f32, size: f32) {
+        let metrics = context.font_collection.default_font().metrics().scale_with(size, context.font_collection.dpi_factor());
+        for column in cursors {
+            let x = line.glyphs[*column].x;
+            self.render_cursor(context, x, y + metrics.descent, metrics.line_height());
+        }
+    }
+
+    pub fn render_cursor(&mut self, context: &RenderContext, x: f32, y: f32, size: f32) {
+        static CURSOR_WIDTH: f32 = 2.5;
+        let rect = Rect::with_position(vec2f(x, y), CURSOR_WIDTH, size);
+        self.render_rect(context, &rect);
     }
 
     pub fn submit_rect(&mut self, vertex: &RectVertex) {

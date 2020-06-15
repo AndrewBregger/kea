@@ -27,10 +27,10 @@ struct Line {
 }
 
 impl Line {
-    fn new(line: usize, start: usize, end: usize) -> Self {
+    fn new(line: usize, indices: LineIndices) -> Self {
         Self {
 			line,
-			indices: LineIndices::new(start, end)
+			indices,
         }
     }
 
@@ -41,18 +41,22 @@ impl Line {
 	fn end_index(&self) -> usize {
     	self.indices.end
 	}
+
+    fn end_line(&self) -> usize { self.indices.end_line }
 }
 
 struct LineIndices {
 	start: usize,
 	end: usize,
+    end_line: usize,
 }
 
 impl LineIndices {
-    fn new(start: usize, end: usize) -> Self {
+    fn new(start: usize, end: usize, end_line: usize) -> Self {
         Self {
             start,
-            end
+            end,
+            end_line,
         }
     }
 }
@@ -148,25 +152,31 @@ impl Buffer {
 
 	/// invalids the shallow line cache from start_line to the end of the buffer.
     pub fn invalidate_line_cache(&mut self, start_line: usize) {
-		println!("len: {}", self.shallow_cache.len());
         let mut last_line_byte = self.shallow_cache.get(start_line).map_or(0, |l| l.start_index());
-        println!("{}|{}", start_line, last_line_byte);
- 
         for (idx, line) in self.content.lines().skip(start_line).enumerate() {
             let idx = idx + start_line;
-            println!("Checking: {:?}", line);
             let bytes = line.len_bytes();
+            let bytes_end_line=
+                if bytes >= 2 && line.char(bytes - 2) == '\r' { bytes - 2 }
+                else if bytes >= 1 && line.char(bytes - 1) == '\n' { bytes - 1 }
+                else { bytes };
+
             if bytes == 0 {
                 continue;
             }
+
+
  
-            let line = Line::new(idx + 1, last_line_byte, last_line_byte + bytes);
+            let line = Line::new(idx + 1,
+                                 LineIndices::new(
+                                     last_line_byte,
+                                     last_line_byte + bytes,
+                                     last_line_byte + bytes_end_line));
+
             if idx < self.shallow_cache.len() {
-                println!("Replacing");
                 self.shallow_cache.replace_line(idx, line);
             }
             else {
-                println!("Pushing");
                 self.shallow_cache.push_line(line);
             }
  
@@ -175,9 +185,9 @@ impl Buffer {
  
         for line in &self.shallow_cache.lines {
             let start = line.start_index();
-            let end = line.end_index();
+            let end = line.end_line();
             let l = self.content.slice(start..end);
-            println!("idx: {}, {} {} {}", line.line, start, end, l);
+            // println!("idx: {}, {} {} {}", line.line, start, end, l);
         }
     }
 
@@ -186,7 +196,8 @@ impl Buffer {
 
         if let Some(lines) = self.shallow_cache.slice(start..end) {
     		for line in lines {
-				let val = String::from(self.content.slice(line.start_index()..line.end_index()));
+
+				let val = String::from(self.content.slice(line.start_index()..line.end_line()));
 				res.push(val);
     		}
         }

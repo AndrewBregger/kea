@@ -58,6 +58,23 @@ pub enum FontError {
     },
 }
 
+#[derive(Debug, Clone)]
+pub struct GlyphInfo {
+    pub size: Vector2F,
+    pub advance: Vector2F,
+    pub origin: Vector2F
+}
+
+impl GlyphInfo {
+    pub fn new(size: Vector2F, advance: Vector2F, origin: Vector2F) -> Self {
+        Self {
+            size,
+            advance,
+            origin
+        }
+    }
+}
+
 /// used to describe what font is to be rendered and in what style.
 #[derive(Debug, Clone)]
 pub struct FontDesc {
@@ -190,6 +207,7 @@ pub struct Font {
     /// description of what font is to be loaded.
     pub(crate) desc: FontDesc,
     pub(crate) device_pixel_ratio: f32,
+    glyph_info: HashMap<char, GlyphInfo>,
 }
 
 #[derive(Debug, Clone)]
@@ -265,12 +283,11 @@ impl FontCollection {
     }
 
     pub fn font_at(&self, index: usize) -> Option<&Font> {
-        if index < self.fonts.len() {
-            Some(&self.fonts[index])
-        }
-        else {
-            None
-        }
+        self.fonts.get(index)
+    }
+
+    pub fn font_at_mut(&mut self, index: usize) -> Option<&mut Font> {
+        self.fonts.get_mut(index)
     }
 
     pub fn default_font(&self) -> &Font {
@@ -306,8 +323,6 @@ impl FontCollection {
 
         self.add_font_by_name(family_name).expect("failed to find default font");
     }
-
-
 }
 
 impl GlyphId {
@@ -358,7 +373,8 @@ impl Font {
         Ok(Self {
             desc,
             source,
-            device_pixel_ratio
+            device_pixel_ratio,
+            glyph_info: HashMap::new(),
         })
 
     }
@@ -400,7 +416,7 @@ impl Font {
         self.get_glyph_index(codepoint).is_some()
     }
 
-    pub fn rasterize_glyph(&self, codepoint: char, height: f32) -> Result<RasterizedGlyph, FontError> {
+    pub fn rasterize_glyph(&mut self, codepoint: char, height: f32) -> Result<RasterizedGlyph, FontError> {
 		//println!("Char: {}", codepoint);
         let glyph = GlyphId::new(codepoint, height, self.desc.clone());
         let height = glyph.scale_size(self.device_pixel_ratio);
@@ -417,7 +433,6 @@ impl Font {
                 			glyph_id,
                 			height,
                 			Transform2F::from_translation(-bounding_box.origin().to_f32()),
-                            // Transform2F::default(),
                             HintingOptions::None,
                 			RasterizationOptions::SubpixelAa)
                 		.map_err(|err| FontError::GlyphError { ch: codepoint, err })?;
@@ -435,6 +450,8 @@ impl Font {
 
             let origin = bounding_box.origin().to_f32();
             let origin = vec2f(origin.x(), origin.y().abs() - bounding_box.height() as f32);
+
+            self.glyph_info.insert(codepoint, GlyphInfo::new(canvas.size.clone().to_f32(), advance.clone(), origin.clone()));
 
             Ok(RasterizedGlyph {
                 glyph,
@@ -454,6 +471,10 @@ impl Font {
     #[inline]
     pub fn scale_size(height: f32, dpi: f32) -> f32 {
         height * dpi * 96.0 / 72.0
+   }
+
+   pub fn info(&self, codepoint: char) -> Option<&GlyphInfo> {
+       self.glyph_info.get(&codepoint)
    }
 }
 

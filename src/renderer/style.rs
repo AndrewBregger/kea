@@ -1,11 +1,22 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::collections::BTreeMap;
+use super::Color;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
 pub struct StyleId(pub usize);
+
+impl StyleId {
+    fn next() -> Self {
+        static TOKEN: AtomicUsize = AtomicUsize::new(0);
+        Self(TOKEN.fetch_add(1, Ordering::SeqCst))
+    }
+}
 
 /// Span of a string in bytes [start..end)
 #[derive(Debug, Clone, Copy)]
 pub struct Span {
-    start: usize,
-    end: usize,
+    pub start: usize,
+    pub end: usize,
 }
 
 impl Span {
@@ -55,5 +66,73 @@ impl StyleSpan {
 
     pub fn end(&self) -> usize {
         self.span.end
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Style {
+    id: StyleId,
+    font_idx: usize,
+    fg_color: Color,
+    bg_color: Color,
+    italic: bool,
+    underline: bool,
+}
+
+impl Style {
+    pub fn new(font_idx: usize, fg_color: Color, bg_color: Color, italic: bool, underline: bool) -> Self {
+        Self {
+            id: StyleId::next(),
+            font_idx,
+            fg_color,
+            bg_color,
+            italic,
+            underline,
+        }
+    }
+
+    pub fn id(&self) -> StyleId {
+        self.id
+    }
+
+    pub fn font_idx(&self) -> usize {
+        self.font_idx
+    }
+
+    pub fn text_color(&self) -> &Color {
+        &self.fg_color
+    }
+
+    pub fn bg_color(&self) -> &Color {
+        &self.bg_color
+    }
+
+    pub fn italic(&self) -> bool {
+        self.italic
+    }
+
+    pub fn underline(&self) -> bool {
+        self.underline
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct StyleMap {
+    styles: BTreeMap<StyleId, Style>,
+}
+
+impl StyleMap {
+    pub fn new() -> Self {
+        Self {
+            styles: BTreeMap::new()
+        }
+    }
+
+    pub fn register_style(&mut self, style: Style) {
+        self.styles.insert(style.id(), style);
+    }
+
+    pub fn style(&self, id: &StyleId) -> Option<&Style> {
+        self.styles.get(id)
     }
 }

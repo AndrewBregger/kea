@@ -12,12 +12,11 @@ pub use window::Window;
 pub use color::Color;
 pub use rect::Rect;
 use std::sync::{Weak, Mutex, Arc, MutexGuard};
-pub use renderer::Renderer;
+pub use renderer::{Renderer, RenderContext};
 use crate::gl::{self, types::*};
 use log::{error, info, debug};
 // use euclid::default::Transform3D;
 use crate::font::{FontCollection, Font};
-use crate::ui::style::StyleId;
 use pathfinder_geometry::transform3d::Transform4F;
 
 #[derive(Debug, Clone, Copy)]
@@ -60,9 +59,24 @@ pub enum RenderError {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct Glyph {
+    pub ch: char,
+    pub x: f32,
+}
+
+#[derive(Debug, Clone)]
 pub struct TextLine {
-    style: StyleId,
-    ch: char,
+    glyphs: Vec<Glyph>,
+    styles: Vec<style::StyleSpan>
+}
+
+impl TextLine {
+    pub fn new(glyphs: Vec<Glyph>, styles: Vec<style::StyleSpan>) -> Self {
+        Self {
+            glyphs,
+            styles
+        }
+    }
 }
 
 // An interface to the rendered used by the rest of the system

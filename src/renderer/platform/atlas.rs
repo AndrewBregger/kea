@@ -5,7 +5,7 @@
 use crate::font::{self, FontDesc, GlyphId, RasterizedGlyph, FontMetrics, FontCollection, Font};
 use crate::gl::{self, types::*};
 use std::collections::HashMap;
-use crate::renderer::Vector4F;
+use crate::renderer::{Vector4F, vec4};
 // use euclid::{default::Vector2D, vec2};
 use crate::pathfinder_geometry::vector::{vec2f, Vector2F, Vector2I};
 type AtlasSize = (i32, i32);
@@ -97,6 +97,12 @@ pub struct GlyphInfo {
     pub origin: Vector2F,
 }
 
+impl GlyphInfo {
+    pub fn tex_info(&self) -> Vector4F {
+        vec4(self.uv.x(), self.uv.y(), self.uv_delta.x(), self.uv_delta.y())
+    }
+}
+
 /// Collection of Atlass that make up the font.
 /// When an atlas becomes full, a new
 pub struct FontAtlas {
@@ -129,19 +135,19 @@ impl FontAtlas {
         self.dpi_factor
     }
 
-    pub fn from_collection<P>(collection: &FontCollection, loader: P) -> Result<Self, font::FontError>
-        where P: FnMut(&mut Self, &Font) -> Result<(), font::FontError> {
+    pub fn from_collection<P>(collection: &mut FontCollection, loader: P) -> Result<Self, font::FontError>
+        where P: FnMut(&mut Self, &mut Font) -> Result<(), font::FontError> {
         let mut atlas = Self::new(collection.dpi_factor());
         atlas.new_atlas(&ATLAS_SIZE);
         atlas.load_collection(collection, loader)?;
         Ok(atlas)
     }
 
-    fn load_collection<P>(&mut self, collection: &FontCollection, mut loader: P) -> Result<(), font::FontError>
-        where P: FnMut(&mut Self, &Font) -> Result<(), font::FontError> {
+    fn load_collection<P>(&mut self, collection: &mut FontCollection, mut loader: P) -> Result<(), font::FontError>
+        where P: FnMut(&mut Self, &mut Font) -> Result<(), font::FontError> {
         for i in 0..collection.num_fonts() {
             println!("Loading Font index: {}", i);
-           match collection.font_at(i) {
+           match collection.font_at_mut(i) {
                Some(font) => loader(self, font)?,
                _ => {}
            }

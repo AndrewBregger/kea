@@ -1,5 +1,4 @@
-use crate::renderer::Renderable;
-use super::style::{StyleSpan};
+use crate::renderer::{Renderable, style::{StyleSpan}};
 use log::error;
 
 #[derive(Debug, Clone)]
@@ -24,17 +23,17 @@ pub struct Text<T> {
 
 impl<T> Text<T> {
 	pub fn from_string(line: usize, text: String) -> Self {
-    	Self::new(text, line, false, None, Vec::new())
+    	Self::new(text, line, false, None, Vec::new(), Vec::new())
 	}
 
-	pub fn new(text: String, line_number: usize, visual_line: bool, assoc: Option<T>, cursors: Vec<usize>) -> Self {
+	pub fn new(text: String, line_number: usize, visual_line: bool, assoc: Option<T>, cursors: Vec<usize>, styles: Vec<StyleSpan>) -> Self {
     	Self {
         	text,
         	line_number,
         	visual_line,
         	assoc,
         	cursors,
-            styles: Vec::new(),
+            styles,
     	}
 	}
 

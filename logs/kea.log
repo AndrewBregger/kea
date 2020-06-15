@@ -170,3 +170,579 @@
 [2020-06-10][16:45:15][winit::platform_impl::platform::x11::window][INFO] Guessed window scale factor: 1
 [2020-06-10][16:45:15][winit::platform_impl::platform::x11::window][DEBUG] Calculated physical dimensions: 500x400
 [2020-06-10][16:45:15][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][23:01:08][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][23:01:08][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:35:53][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:35:53][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:41:26][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:41:26][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:41:36][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:41:36][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:46:21][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:46:21][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:46:43][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:46:43][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:47:22][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:47:22][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:47:32][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:47:32][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:48:41][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:48:42][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:49:08][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:49:08][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][19:53:27][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][19:53:28][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][20:02:50][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][20:02:50][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][20:03:33][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][20:03:33][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][20:03:56][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][20:03:56][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][20:55:44][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][20:55:45][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][20:56:12][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][20:56:12][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:00:32][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:00:32][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:00:51][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:00:51][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:01:49][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:01:49][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:03:10][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:03:10][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:05:05][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:05:05][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:05:35][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:05:36][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:07:00][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:07:01][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:07:12][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:07:12][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:12:46][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:12:46][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-10][21:14:30][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-10][21:14:31][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:01:57][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:01:58][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:02:19][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:02:19][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:04:40][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:04:41][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:05:56][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:05:57][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:07:46][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:07:46][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:11:33][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:11:33][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:14:09][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:14:10][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:17:21][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:17:21][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:17:53][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:17:53][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:21:38][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:21:39][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:22:07][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:22:07][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-11][00:22:20][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-11][00:22:20][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-12][17:39:17][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-12][17:39:18][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-12][17:40:02][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-12][17:40:02][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-12][17:40:21][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-12][17:40:21][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-13][16:37:07][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-13][16:37:07][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][14:31:59][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][14:32:00][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][14:36:02][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][14:36:02][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][16:59:16][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][16:59:16][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][16:59:48][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 12.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][16:59:48][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][17:05:05][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][17:05:05][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][18:05:24][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][18:05:25][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][18:23:44][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][18:23:45][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-14][22:47:48][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-14][22:47:49][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][12:39:45][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][12:39:45][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][12:40:58][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][12:40:59][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][12:42:20][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][12:42:21][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][12:55:06][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][12:55:07][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][12:55:50][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][12:55:50][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][12:56:32][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][12:56:32][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][12:56:57][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][12:56:57][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][13:36:56][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][13:36:56][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:19:53][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:19:53][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:21:59][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:21:59][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:24:16][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:24:16][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:25:34][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:25:34][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:27:24][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:27:24][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:27:57][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:27:57][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:28:11][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:28:12][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:30:32][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:30:32][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:30:43][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:30:44][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:31:41][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:31:42][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][15:32:00][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][15:32:01][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][16:17:28][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][16:17:28][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][16:18:07][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][16:18:07][kea::renderer::renderer][INFO] Setting Renderers Font Atlas
+[2020-06-15][16:18:17][kea][INFO] Loaded Config: Config {
+    font: FontConfig {
+        family: "Fira Code Retina",
+        size: 10.0,
+    },
+    theme_scheme: "",
+}
+[2020-06-15][16:18:18][kea::renderer::renderer][INFO] Setting Renderers Font Atlas

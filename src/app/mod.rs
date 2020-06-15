@@ -57,7 +57,7 @@ pub fn run(config: Config) -> Result<(), AppError> {
     let window = window.make_current().map_err(AppError::WindowError)?;
     window.init_gl();
 
-    let font_atlas = FontAtlas::from_collection(&font_collection, |atlas, font| {
+    let font_atlas = FontAtlas::from_collection(&mut font_collection, |atlas, font| {
         // println!("Loading Font: {:?}", font.desc());
         for c in 32 as u8 .. 127 as u8 {
             let rglyph = font.rasterize_glyph(c as char, font_size)?;
@@ -97,16 +97,6 @@ pub fn run(config: Config) -> Result<(), AppError> {
 
 fn application_update_thread(app: WeakApp, receiver: Receiver<Update>) -> std::thread::JoinHandle<()> {
     unimplemented!();
-    // kea::utils::spawn_thread("app update", move || {
-    //     loop {
-    //         let update = match receiver.recv()  {
-    //             Ok(update) => update,
-    //             _ => panic!("Channel disconnected"),
-    //         };
-
-    //         app.upgrade().inner().apply_update(update);
-    //     }
-    // })
 }
 
 pub fn setup_logger(config: &Config) -> Result<(), fern::InitError> {
