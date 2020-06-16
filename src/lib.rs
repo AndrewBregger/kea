@@ -1,3 +1,10 @@
+use std::{rc::Rc, cell::RefCell};
+pub type Ptr<T> = Rc<RefCell<T>>;
+
+pub fn ptr<T>(val: T) ->  Ptr<T> {
+    Ptr::new(RefCell::new(val))
+}
+
 pub mod comm {
     pub use std::sync::mpsc::{self, Sender, Receiver};
 
