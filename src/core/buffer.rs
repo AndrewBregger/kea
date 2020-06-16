@@ -59,6 +59,12 @@ impl LineIndices {
             end_line,
         }
     }
+
+    fn extend(&mut self, diff: usize) {
+        self.start    += diff;
+        self.end      += diff;
+        self.end_line += diff;
+    }
 }
 
 struct ShallowCache {
@@ -100,6 +106,10 @@ impl ShallowCache {
 
     fn slice<R: std::slice::SliceIndex<[Line]>>(&self, r: R) -> Option<&<R as std::slice::SliceIndex<[Line]>>::Output> {
         self.lines.get(r)
+    }
+
+    fn slice_mut<R: std::slice::SliceIndex<[Line]>>(&mut self, r: R) -> Option<&mut <R as std::slice::SliceIndex<[Line]>>::Output> {
+        self.lines.get_mut(r)
     }
 }
 
@@ -187,8 +197,21 @@ impl Buffer {
             let start = line.start_index();
             let end = line.end_line();
             let l = self.content.slice(start..end);
-            // println!("idx: {}, {} {} {}", line.line, start, end, l);
         }
+    }
+
+    /// if a character was inserted into the buffer then the shallow line cache doesn't
+    /// need to be rebuild just all indices following the insert need to be offset by
+    /// the size of the character.
+    pub fn offset_line_cache(&mut self, start_line: usize, diff: usize) {
+        if let Some(lines) = self.shallow_cache.slice_mut(start_line..) {
+            // only update the end of the first line.
+            lines[0].indices.end_line += diff;
+            lines[0].indices.end += diff;
+
+            lines.iter_mut().skip(1).for_each(|line| line.indices.extend(diff));
+        }
+
     }
 
     pub fn request_lines(&self, start: usize, end: usize) -> Vec<String> {
