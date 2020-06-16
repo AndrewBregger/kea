@@ -97,6 +97,7 @@ impl EventHandler {
                 event,
             } => match event {
                 Resized(size) => {
+                    handler.renderer.update_perspective(size.width as i32, size.height as i32);
                     app.update_size(size.width, size.height);
                 }
                 Moved(pos) => {}

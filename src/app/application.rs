@@ -4,19 +4,18 @@ use std::str::FromStr;
 use std::collections::BTreeMap;
 
 use kea;
+use kea::comm::{Duplex, duplex, channel, Sender};
+use log::{info, debug, error};
 
-use crate::glutin::{event_loop::EventLoop, PossiblyCurrent};
 // use crate::euclid::{default::Vector2D, vec2};
+use crate::glutin::{event_loop::EventLoop, PossiblyCurrent, event::ModifiersState, event::{KeyboardInput, VirtualKeyCode}};
 use crate::pathfinder_geometry::vector::{Vector2F, vec2f};
 use crate::renderer::{Renderer, RenderContext, Window, window::LogicalSize, Rect, Color, Renderable, Glyph, TextLine};
 use crate::core::{self, KeaCore, Edit, Update};
 use crate::ui::*;
 use crate::font::{Font, FontCollection};
-use kea::comm::{Duplex, duplex, channel, Sender};
+
 use super::{Config, AppEvent, AppError};
-
-use log::{info, debug, error};
-
 
 pub struct App(Arc<Mutex<Application>>);
 
@@ -46,6 +45,17 @@ impl WeakApp {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+enum EditMode {
+    Normal,
+    Insert,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct EditState {
+    mode: EditMode,
+}
+
 pub struct Application {
     /// an interface for the application to interact with the renderer.
     // renderer: Renderer,
@@ -66,7 +76,9 @@ pub struct Application {
 	/// the editor core.
     core: KeaCore,
     /// runtime information for the renderer.
-    context: RenderContext
+    context: RenderContext,
+    /// state of the editor
+    state: EditState,
 }
 
 impl Application {
@@ -85,13 +97,14 @@ impl Application {
             active_frame: None,
             core,
             context: RenderContext::new(font_collection),
+            state: EditState {
+                mode: EditMode::Normal
+            },
         })
     }
 
     pub fn update_size(&mut self, width: u32, height: u32) {
         self.draw_requested = true;
-        // self.renderer.update_perspective(width as i32, height as i32);
-        // do what ever is needed here for the rest of the app to update.
     }
 
     pub fn draw_requested(&self) -> bool {
@@ -118,7 +131,7 @@ impl Application {
 
         let lines = Frame::compute_lines(size.y(), &metrics);
 		let mut frame = Frame::new(buffer_id, size, origin, lines);
-		frame.update_line_cache(Invalidation::Init, buffer);
+		frame.update_line_cache(Invalidation::Init, &buffer);
 
 		frame.set_active(true);
 
@@ -146,6 +159,33 @@ impl Application {
         }
 
         TextLine::new(glyphs, line.styles.clone())
+    }
+
+    pub fn handle_keyboard_input(&mut self, input: KeyboardInput, modifiers: &ModifiersState) {
+        // let edit_mode = self.state.mode;
+        // if let Some(operation) =
+
+
+    }
+
+    pub fn active_frame(&self) -> Option<&Frame> {
+        if let Some(id) = self.active_frame.as_ref() {
+            self.frames.get(id)
+        }
+        else {
+            info!("No Active Frame");
+            None
+        }
+    }
+
+    pub fn active_frame_mut(&mut self) -> Option<&mut Frame> {
+        if let Some(id) = self.active_frame.as_ref() {
+            self.frames.get_mut(id)
+        }
+        else {
+            info!("No Active Frame");
+            None
+        }
     }
 }
 

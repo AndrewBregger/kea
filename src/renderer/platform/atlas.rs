@@ -203,7 +203,7 @@ impl FontAtlas {
 
         let uv_delta = vec2f(
             glyph.width as f32 / ATLAS_SIZE.0 as f32,
-            (glyph.height + 1) as f32 / ATLAS_SIZE.1 as f32,
+            glyph.height as f32 / ATLAS_SIZE.1 as f32,
         );
 
         let advance = glyph.advance;

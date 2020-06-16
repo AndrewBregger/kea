@@ -9,6 +9,12 @@ use crate::font::ScaledFontMetrics;
 use crate::renderer::{Renderable, Renderer, Color, TextLine, style::{StyleSpan, Span, StyleId}};
 use log::error;
 
+pub enum CursorMotion {
+	Left,
+	Right,
+	Up,
+	Down
+}
 /// cursor position, zero-indexed.
 #[derive(Debug, Clone)]
 pub struct Cursor {
@@ -33,9 +39,9 @@ pub enum Invalidation {
     /// the frame is new and needs to be populated.
 	Init,
 	/// The user scrolled up this many pixels
-	ScrollUp { pixels: usize },
+	ScrollUp { pixels: usize, lines: usize },
 	/// The user scrolled down this many pixels
-	ScrollDown { pixels: usize }
+	ScrollDown { pixels: usize, lines: usize }
 }
 
 pub struct Frame {
@@ -83,7 +89,11 @@ impl Frame {
 		TOKEN.fetch_add(1, Ordering::SeqCst)
 	}
 
-    pub fn id(&self) -> FrameId {
+	pub fn buffer(&self) -> &core::BufferId {
+		&self.buffer
+	}
+
+	pub fn id(&self) -> FrameId {
 		self.id
     }
 
@@ -114,8 +124,8 @@ impl Frame {
 	pub fn update_line_cache(&mut self, invalidation: Invalidation, buffer: &core::Buffer) {
 		match invalidation {
 			Invalidation::Init => self.fill_cache(buffer),
-			Invalidation::ScrollUp { .. } |
-			Invalidation::ScrollDown { .. } => unimplemented!(),
+			Invalidation::ScrollUp { pixels, lines }  => self.scroll_up(pixels, lines, buffer),
+			Invalidation::ScrollDown { pixels, lines } => self.scroll_down(pixels, lines, buffer),
 		}
 	}
 
@@ -178,6 +188,117 @@ impl Frame {
 		}
 		else {
 			None
+		}
+	}
+
+	pub fn move_cursor(&mut self, dir: CursorMotion, diff: usize) -> Option<isize> {
+		match dir {
+			CursorMotion::Up 	=> {
+				if self.cursor.line > 0 {
+					self.cursor.line -= diff;
+				}
+			},
+			CursorMotion::Down 	=> {
+				self.cursor.line += diff;
+			},
+			CursorMotion::Left 	=> {
+				if self.cursor.column > 0 {
+					self.cursor.column -= diff;
+				}
+			},
+			CursorMotion::Right => {
+				self.cursor.column += diff;
+			},
+		}
+
+		self.update_view_from_cursor()
+	}
+
+	/// attempts to update the view of the frame.
+	/// It used the view according to the cursor.
+	/// Returns the number of lines changes and the sign
+	/// denotes the direction of the change.
+	fn update_view_from_cursor(&mut self) -> Option<isize> {
+		if self.view.contains(&self.cursor.line) {
+			None
+		}
+		else {
+			if self.cursor.line < self.view.start {
+                let diff = self.view.start - self.cursor.line;
+				self.view.start = self.cursor.line;
+				Some(diff as isize)
+			}
+			else if self.cursor.line > self.view.end {
+				let diff = (self.cursor.line - self.view.end) as isize;
+				self.view.end = self.cursor.line;
+				Some(-diff)
+			}
+			else {
+                unreachable!()
+			}
+		}
+	}
+
+	fn scroll_up(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
+        let view_length = self.view.len();
+		let cache_lines = self.lines_mut();
+
+		// move the still visable lines to the new line of the cache.
+		for idx in 0..view_length - lines {
+			cache_lines[idx] = cache_lines[idx + lines].clone();
+		}
+
+		// create a view into the buffer of only the needed lines.
+		let mut updated_view = self.view.clone();
+		updated_view.start = updated_view.end - lines;
+
+		// update the line cache with the new lines.
+		let buffer_lines =  buffer.request_lines(updated_view.start, updated_view.end);
+        let mut populated_lines = self.view.len() - lines;
+        for (idx, line) in buffer_lines.into_iter().enumerate() {
+			if populated_lines >= self.view.len() {
+				break;
+			}
+
+			let cursor = self.get_cursors(self.view.end + idx - lines);
+
+			for (offset, text) in self.layout_line(self.view.end + idx - lines, line, cursor).into_iter().enumerate() {
+				self.set_line(self.view.len() + idx - lines + offset, text);
+				populated_lines += 1;
+			}
+		}
+	}
+
+	fn scroll_down(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
+		let view_length = self.view.len();
+
+		let cache_lines = self.lines_mut();
+
+		for idx in (0..view_length - lines).rev() {
+			cache_lines[idx + lines] = cache_lines[idx].clone();
+		}
+
+		let mut updated_view = self.view.clone();
+		updated_view.end = updated_view.start + lines;
+
+
+		let mut updated_view = self.view.clone();
+		updated_view.start = updated_view.end - lines;
+
+		// update the line cache with the new lines.
+		let buffer_lines =  buffer.request_lines(updated_view.start, updated_view.end);
+		let mut populated_lines = self.view.len() - lines;
+		for (idx, line) in buffer_lines.into_iter().enumerate().rev() {
+			if populated_lines >= self.view.len() {
+				break;
+			}
+
+			let cursor = self.get_cursors(self.view.start + idx);
+
+			for (offset, text) in self.layout_line(self.view.start + idx, line, cursor).into_iter().enumerate().rev() {
+				self.set_line(self.view.start + offset, text);
+				populated_lines += 1;
+			}
 		}
 	}
 }

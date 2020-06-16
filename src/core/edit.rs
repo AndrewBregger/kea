@@ -4,10 +4,15 @@ use crate::pathfinder_geometry::vector::{vec2f, Vector2F};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::collections::BTreeMap;
+use std::ops::Deref;
 
 use super::{Buffer, BufferId};
 use super::buffer::{BufferResult};
 use super::CoreError;
+use kea::{Ptr, ptr};
+use std::borrow::Borrow;
+use std::cell::{Ref, RefMut};
+
 
 #[derive(Debug, Clone)]
 pub struct BufferInfo {
@@ -34,7 +39,7 @@ impl Counter {
 
 pub struct Core {
     id_counter: Counter,
-    buffers: BTreeMap<BufferId, Box<Buffer>>,
+    buffers: BTreeMap<BufferId, Ptr<Buffer>>,
 }
 
 impl Core {
@@ -50,7 +55,7 @@ impl Core {
     }
 
     fn insert_buffer(&mut self, buffer: Buffer) {
-        assert!(self.buffers.insert(buffer.id(), Box::new(buffer)).is_none());
+        assert!(self.buffers.insert(buffer.id(), ptr(buffer)).is_none());
     }
 
 
@@ -70,20 +75,45 @@ impl Core {
 
     pub fn request_lines(&self, buffer: BufferId, start: usize, end: usize) -> Vec<String> {
         if let Some(buffer) = self.buffers.get(&buffer) {
-			buffer.request_lines(start, end)
+            buffer.deref().borrow().request_lines(start, end)
+            // buffer.borrow().request_lines(start, end)
+            // buffer.borrow().request_lines(start, end)
         }
         else { unreachable!() }
     }
 
-	/// retreives the buffer of the given id.
+	/// retrieve the buffer of the given id.
 	/// note: Because a buffer id can only be created
 	/// 	  here, is is impossible for an invalid
 	/// 	  id to be given.
-    pub fn get_buffer(&self, id: &BufferId) -> Option<&Box<Buffer>> {
-		self.buffers.get(id)
+    pub fn get_buffer(&self, id: &BufferId) -> Option<Ref<Buffer>> {
+		if let Some(buff) = self.buffers.get(id) {
+            Some(buff.deref().borrow())
+        }
+        else {
+            None
+        }
+
+    }
+
+    /// retrieve the buffer of the given id.
+    /// note: Because a buffer id can only be created
+    /// 	  here, is is impossible for an invalid
+    /// 	  id to be given.
+    pub fn get_buffer_mut(&mut self, id: &BufferId) -> Option<RefMut<Buffer>> {
+        if let Some(buff) = self.buffers.get_mut(id) {
+            if let Ok(buff) = buff.try_borrow_mut() {
+                Some(buff)
+            }
+            else {
+                None
+            }
+        }
+        else {
+            None
+        }
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub enum Edit {

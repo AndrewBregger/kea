@@ -426,6 +426,8 @@ impl Font {
         if let Some(glyph_id) = self.get_glyph_index(codepoint) {
             let bounding_box = self.source.raster_bounds(glyph_id, height, Transform2F::default(), HintingOptions::None, RasterizationOptions::SubpixelAa)
             	.unwrap();
+
+            // let size = bounding_box.size().0 + vec2i(0, 1).0;
 			let mut canvas = Canvas::new(bounding_box.size(), Format::Rgb24);
 
             self.source.rasterize_glyph(
