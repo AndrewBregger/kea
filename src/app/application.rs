@@ -16,6 +16,8 @@ use crate::ui::*;
 use crate::font::{Font, FontCollection};
 
 use super::{Config, AppEvent, AppError};
+use std::path::Component::CurDir;
+use crate::renderer::window::event::WindowEvent::{CursorEntered, CursorMoved};
 
 pub struct App(Arc<Mutex<Application>>);
 
@@ -165,7 +167,33 @@ impl Application {
         // let edit_mode = self.state.mode;
         // if let Some(operation) =
 
+        if let Some(key) = input.virtual_keycode {
+            match key {
+                VirtualKeyCode::Up => {
+                    if let Some(frame) = self.active_frame_mut() {
+                        if let Some(diff) = frame.move_cursor(CursorMotion::Up, 1) {
+                            let buffer = self.core.inner().get_buffer(frame.buffer()).unwrap();
+                            if diff < 0 {
+                                frame.scroll_down(0, diff.abs() as usize, &buffer);
+                            }
+                            else {
+                                frame.scroll_up(0, diff as usize, &buffer);
+                            }
+                        }
+                    }
+                }
+                VirtualKeyCode::Down => {
 
+                }
+                VirtualKeyCode::Left => {
+
+                }
+                VirtualKeyCode::Right => {
+
+                }
+                _ => {}
+            }
+        }
     }
 
     pub fn active_frame(&self) -> Option<&Frame> {

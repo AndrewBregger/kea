@@ -239,7 +239,7 @@ impl Frame {
 		}
 	}
 
-	fn scroll_up(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
+	pub fn scroll_up(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
         let view_length = self.view.len();
 		let cache_lines = self.lines_mut();
 
@@ -269,7 +269,7 @@ impl Frame {
 		}
 	}
 
-	fn scroll_down(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
+	pub fn scroll_down(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
 		let view_length = self.view.len();
 
 		let cache_lines = self.lines_mut();
