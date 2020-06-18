@@ -113,7 +113,7 @@ impl EventHandler {
                     input,
                     is_synthetic,
                 } => {
-                    // app.handle_keyboard_input(input, &handler.modifiers)
+                    app.handle_keyboard_input(input, &handler.modifiers)
                 }
                 CursorMoved {
                     device_id,

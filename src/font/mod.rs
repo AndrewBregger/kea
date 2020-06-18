@@ -438,20 +438,9 @@ impl Font {
                             HintingOptions::None,
                 			RasterizationOptions::SubpixelAa)
                 		.map_err(|err| FontError::GlyphError { ch: codepoint, err })?;
-			let advance = self.source.advance(glyph_id).map_err(|err| FontError::GlyphError { ch: codepoint, err })?; //.to_i32();
+			let advance = self.source.advance(glyph_id).map_err(|err| FontError::GlyphError { ch: codepoint, err })?;
             let advance = vec2f(advance.x() * scale, advance.y() * scale);
-
-            let mut temp_buffer = Vec::new();
-
-            for i in 0..canvas.size.y() {
-                let start = i as usize * canvas.stride;
-                let end = (i as usize + 1) * canvas.stride;
-                let row = &canvas.pixels[start..end];
-                temp_buffer.push(row);
-            }
-
             let origin = bounding_box.origin().to_f32();
-            let origin = vec2f(origin.x(), origin.y().abs() - bounding_box.height() as f32);
 
             self.glyph_info.insert(codepoint, GlyphInfo::new(canvas.size.clone().to_f32(), advance.clone(), origin.clone()));
 
@@ -462,7 +451,7 @@ impl Font {
                 height: canvas.size.y(),
                 origin,
                 advance,
-                bitmap: temp_buffer.into_iter().rev().flat_map(|e| e.to_vec()).collect(),
+                bitmap: canvas.pixels, // temp_buffer.into_iter().rev().flat_map(|e| e.to_vec()).collect(),
             })
         }
         else {

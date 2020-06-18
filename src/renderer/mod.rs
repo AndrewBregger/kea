@@ -88,17 +88,13 @@ impl Renderer {
     //     std::thread::spawn(move || {
     //         let window = window.make_current().unwrap();
     //         assert!(window.is_current());
-
     //         window.init_gl();
     //         renderer.inner().init().unwrap();
-
     //         unsafe {
     //             gl::ClearColor(0.6, 0.6, 0.6, 1.0);
     //         }
-
     //         let (width, height) = window.get_size().into();
     //         renderer.inner().update_perspective(width, height);
-
     //         loop {
     //             let msg = match receiver.recv() {
     //                 Ok(msg) => msg,
@@ -107,7 +103,6 @@ impl Renderer {
     //                     break
     //                 }
     //             };
-
     //             match msg {
     //                 RMessage::Flush => {
     //                     renderer.inner().flush();
@@ -133,11 +128,4 @@ impl Renderer {
     //     })
     // }
 
-    pub fn update_perspective(&self, width: i32, height: i32) {
-        unsafe {
-            gl::Viewport(0, 0, width, height);
-        }
-        let ortho = Transform4F::from_ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0);
-        self.set_perspective(&ortho);
-    }
 }

@@ -15,7 +15,7 @@ void main() {
     vec2 dem = vertex.zw;
 
     vec2 position;
-    position.x = (gl_VertexID == 0 || gl_VertexID == 1) ? 1.0 : 0.0;
+    position.x = (gl_VertexID == 0 || gl_VertexID == 1) ? 0.0 : 1.0;
     position.y = (gl_VertexID == 0 || gl_VertexID == 3) ? 0.0 : 1.0;
 
     vec2 vert = root + dem * position;

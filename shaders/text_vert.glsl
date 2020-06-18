@@ -22,18 +22,12 @@ void main() {
     vec2 uv_dem = tex_info.zw;
 
     vec2 position;
-    position.x = (gl_VertexID == 0 || gl_VertexID == 1) ? 1.0 : 0.0;
+    position.x = (gl_VertexID == 0 || gl_VertexID == 1) ? 0.0 : 1.0;
     position.y = (gl_VertexID == 0 || gl_VertexID == 3) ? 0.0 : 1.0;
 
     vec2 vert  = root + dem * position;
     vec2 uv    = uv_root + uv_dem * position;
 
-    // position.x = (gl_VertexID == 0 || gl_VertexID == 1) ? 1.0 : 0.0;
-    // position.y = (gl_VertexID == 0 || gl_VertexID == 3) ? 0.0 : 1.0;
-
-    // vec2 offset = perspective.xy;
-    // vec2 proj = perspective.zw;
-    
     // gl_Position = vec4(offset + proj * vert, 0, 1);
     gl_Position = perspective * vec4(vert, 0, 1);
     vs_out.fg_color = fg_color;

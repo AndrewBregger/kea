@@ -166,19 +166,19 @@ impl Application {
     pub fn handle_keyboard_input(&mut self, input: KeyboardInput, modifiers: &ModifiersState) {
         // let edit_mode = self.state.mode;
         // if let Some(operation) =
-
+        debug!("Keyboard Input: {:?} Modifier State: {:?}", input, modifiers);
         if let Some(key) = input.virtual_keycode {
             match key {
                 VirtualKeyCode::Up => {
                     if let Some(frame) = self.active_frame_mut() {
                         if let Some(diff) = frame.move_cursor(CursorMotion::Up, 1) {
-                            let buffer = self.core.inner().get_buffer(frame.buffer()).unwrap();
-                            if diff < 0 {
-                                frame.scroll_down(0, diff.abs() as usize, &buffer);
-                            }
-                            else {
-                                frame.scroll_up(0, diff as usize, &buffer);
-                            }
+                            // let buffer = self.core.inner().get_buffer(frame.buffer()).unwrap();
+                            // if diff < 0 {
+                            //     frame.scroll_down(0, diff.abs() as usize, &buffer);
+                            // }
+                            // else {
+                            //     frame.scroll_up(0, diff as usize, &buffer);
+                            // }
                         }
                     }
                 }
@@ -227,8 +227,8 @@ impl Renderable for Application {
                 let origin = frame.origin();
                 let font = self.context.fonts().default_font();
                 let metrics = font.metrics().scale_with(self.config.font_size(), font.device_pixel_ratio);
-                let start_y = height - metrics.ascent as f32;
-        		let start_x = 2.0;
+                let start_y = metrics.ascent;
+        		let start_x = 0.0;
 
         		let x = start_x + origin.x();
         		let mut y = start_y + origin.y();
@@ -251,7 +251,7 @@ impl Renderable for Application {
                             }
                         }
         			}
-                    y -= metrics.line_height();
+                    y += metrics.line_height();
         		}
             }
         }

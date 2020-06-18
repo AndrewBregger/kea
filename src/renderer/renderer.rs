@@ -404,6 +404,15 @@ impl Renderer {
         self.text_shader.bounded(|shader| shader.set_perspective(perf));
     }
 
+    pub fn update_perspective(&self, width: i32, height: i32) {
+        unsafe {
+            gl::Viewport(0, 0, width, height);
+        }
+        // let ortho = Transform4F::from_ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0);
+        let ortho = Transform4F::from_ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
+        self.set_perspective(&ortho);
+    }
+
 
     /// renders a Rect
     pub fn render_rect(&mut self, _context: &RenderContext, rect: &Rect) {
@@ -423,11 +432,10 @@ impl Renderer {
         let metrics = font.metrics().scale_with(size, self.atlas.dpi_factor());
 
         // this will make the vector longer then it needs to be
-        let mut glyphs = Vec::with_capacity(s.len());
         let mut lines: u32 = 1;
         let mut width: f32 = 0.0;
         let start_x = x;
-        let start_y = y;
+        let start_y = y - metrics.ascent;
 
         for (idx, c) in s.chars().enumerate() {
             let glyph_id = GlyphId::new(c, size, font.desc().clone());
@@ -442,21 +450,13 @@ impl Renderer {
                 let tex_info = vec4(info.uv.x(), info.uv.y(), info.uv_delta.x(), info.uv_delta.y());
                 let tex_id = info.tex as f32;
                 let vertex = TextVertex::create(vertex, fg_color, tex_info, tex_id);
-                glyphs.push(vertex);
 
                 x += info.advance.x();
                 width += info.advance.x();
+
+                self.submit_character(&vertex);
             }
         }
-        //
-        // let bg_height = lines as f32 * metrics.line_height();
-        // let rect= Rect::with_position(vec2f(start_x, start_y + metrics.descent), width, bg_height).with_color(bg_color);
-        // self.render_rect(&rect);
-        //
-        // let rect= Rect::with_position(vec2f(hightlight_start, start_y + metrics.descent), highlight_width, metrics.line_height()).with_color(Color::rgba(1.0, 0.8, 0.0, 0.6));
-        // self.render_rect(&rect);
-
-        glyphs.iter().for_each(|v| self.submit_character(v));
     }
 
     pub fn render_line(&mut self, context: &RenderContext, line: &TextLine, x: f32, y: f32, size: f32) {
@@ -496,6 +496,7 @@ impl Renderer {
 
     pub fn render_cursor(&mut self, context: &RenderContext, x: f32, y: f32, size: f32) {
         static CURSOR_WIDTH: f32 = 2.5;
+        // @micro-optimization: build a RectVertex directly instead of building a Rect. Reduces some copying.
         let rect = Rect::with_position(vec2f(x, y), CURSOR_WIDTH, size);
         self.render_rect(context, &rect);
     }
