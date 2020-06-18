@@ -94,6 +94,18 @@ impl Core {
     /// note: Because a buffer id can only be created
     /// 	  here, is is impossible for an invalid
     /// 	  id to be given.
+    pub fn get_buffer_ptr(&self, id: &BufferId) -> Option<Ptr<Buffer>> {
+        if let Some(buff) = self.buffers.get(id) {
+            Some(Ptr::clone(buff))
+        } else {
+            None
+        }
+    }
+
+    /// retrieve the buffer of the given id.
+    /// note: Because a buffer id can only be created
+    /// 	  here, is is impossible for an invalid
+    /// 	  id to be given.
     pub fn get_buffer_mut(&mut self, id: &BufferId) -> Option<RefMut<Buffer>> {
         if let Some(buff) = self.buffers.get_mut(id) {
             if let Ok(buff) = buff.try_borrow_mut() {

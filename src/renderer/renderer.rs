@@ -181,7 +181,7 @@ impl RenderContext {
             style_map: StyleMap::new(),
             font_collection: collection,
             font_size,
-            dpi_factor
+            dpi_factor,
         };
 
         // temporary until real color themes are implemented.
@@ -207,10 +207,14 @@ impl RenderContext {
     }
 
     #[inline]
-    pub fn font_size(&self) -> f32 { self.font_size }
+    pub fn font_size(&self) -> f32 {
+        self.font_size
+    }
 
     #[inline]
-    pub fn dpi_factor(&self) -> f32 { self.dpi_factor  }
+    pub fn dpi_factor(&self) -> f32 {
+        self.dpi_factor
+    }
 }
 
 /// Maintains information needed to render
@@ -706,7 +710,7 @@ impl Renderer {
     }
 
     fn position_line(line: &Text<TextLine>, font: &Font) -> TextLine {
-// use crate::eucd::vec2;
+        // use crate::eucd::vec2;
         let mut glyphs = Vec::new();
 
         let mut x = 0.0;

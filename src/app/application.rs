@@ -4,15 +4,15 @@ use std::str::FromStr;
 use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
 use kea;
+use kea::Ptr;
 use kea::comm::{channel, duplex, Duplex, Sender};
 use log::{debug, error, info};
 
 // use crate::euclid::{default::Vector2D, vec2};
-use crate::core::{self, Edit, KeaCore, Update, Core};
+use crate::core::{self, Core, Edit, KeaCore, Update};
 use crate::font::{Font, FontCollection};
 use crate::glutin::{
-    event::ModifiersState,
-    event::{KeyboardInput, VirtualKeyCode},
+    event::{KeyboardInput, VirtualKeyCode, ModifiersState, ElementState},
     event_loop::EventLoop,
     PossiblyCurrent,
 };
@@ -143,17 +143,17 @@ impl Application {
             .metrics()
             .scale_with(self.config.font_size(), self.window.dpi_factor() as f32);
 
-
-        let buffer_id = self.core
+        let buffer_id = self
+            .core
             .open_file(core::BufferInfo {
                 path: Some(PathBuf::from_str("src/main.rs").unwrap()),
             })
             .unwrap();
-        let buffer = self.core.get_buffer(&buffer_id).unwrap();
+        let buffer = self.core.get_buffer_ptr(&buffer_id).unwrap();
 
         let lines = Frame::compute_lines(size.y(), &metrics);
-        let mut frame = Frame::new(buffer_id, size, origin, lines);
-        frame.update_line_cache(Invalidation::Init, &buffer);
+        let mut frame = Frame::new(buffer, size, origin, lines);
+        frame.update_line_cache(Invalidation::Init);
 
         frame.set_active(true);
 
@@ -171,25 +171,64 @@ impl Application {
             "Keyboard Input: {:?} Modifier State: {:?}",
             input, modifiers
         );
+
+
+		// for now I do not want to handle release.
+		if input.state == ElementState::Released {
+    		return;
+		}
+
         if let Some(key) = input.virtual_keycode {
             match key {
                 VirtualKeyCode::Up => {
                     if let Some(frame) = self.active_frame_mut() {
-                        let buffer_id = frame.buffer().clone();
-                        let buffer = self.core.get_buffer(&buffer_id).unwrap();
                         if let Some(diff) = frame.move_cursor(CursorMotion::Up, 1) {
                             if diff < 0 {
-                                frame.scroll_down(0, diff.abs() as usize, &buffer);
+                                frame.scroll_down(0, diff.abs() as usize);
+                            } else {
+                                frame.scroll_up(0, diff as usize);
                             }
-                            else {
-                                frame.scroll_up(0, diff as usize, &buffer);
-                            }
+                            self.draw_requested = true;
                         }
                     }
                 }
-                VirtualKeyCode::Down => {}
-                VirtualKeyCode::Left => {}
-                VirtualKeyCode::Right => {}
+                VirtualKeyCode::Down => {
+                    println!("Handling Down");
+                    if let Some(frame) = self.active_frame_mut() {
+                        if let Some(diff) = frame.move_cursor(CursorMotion::Down, 1) {
+                            if diff < 0 {
+                                frame.scroll_down(0, diff.abs() as usize);
+                            } else {
+                                frame.scroll_up(0, diff as usize);
+                            }
+                            self.draw_requested = true;
+                        }
+                    }
+                }
+                VirtualKeyCode::Left => {
+                    if let Some(frame) = self.active_frame_mut() {
+                        if let Some(diff) = frame.move_cursor(CursorMotion::Left, 1) {
+                            if diff < 0 {
+                                frame.scroll_down(0, diff.abs() as usize);
+                            } else {
+                                frame.scroll_up(0, diff as usize);
+                            }
+                            self.draw_requested = true;
+                        }
+                    }
+                }
+                VirtualKeyCode::Right => {
+                    if let Some(frame) = self.active_frame_mut() {
+                        if let Some(diff) = frame.move_cursor(CursorMotion::Right, 1) {
+                            if diff < 0 {
+                                frame.scroll_down(0, diff.abs() as usize);
+                            } else {
+                                frame.scroll_up(0, diff as usize);
+                            }
+                            self.draw_requested = true;
+                        }
+                    }
+                }
                 _ => {}
             }
         }

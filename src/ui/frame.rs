@@ -11,6 +11,8 @@ use crate::renderer::{
 };
 use crate::ui::line_cache::{LineCache, Text};
 use log::error;
+use kea::{Ptr};
+use std::cell::Ref;
 
 pub enum CursorMotion {
     Left,
@@ -48,7 +50,7 @@ pub struct Frame {
     /// id of this frame
     id: FrameId,
     /// the buffer this frame is rendering
-    buffer: core::BufferId,
+    buffer: Ptr<core::Buffer>,
     /// the pixel size of the frame
     size: Vector2F,
     /// the lower left corner of this frame in pixels.
@@ -67,7 +69,7 @@ pub struct Frame {
 }
 
 impl Frame {
-    pub fn new(buffer: core::BufferId, size: Vector2F, origin: Vector2F, lines: usize) -> Self {
+    pub fn new(buffer: Ptr<core::Buffer>, size: Vector2F, origin: Vector2F, lines: usize) -> Self {
         Self {
             id: FrameId(Self::next_id()),
             buffer,
@@ -89,8 +91,8 @@ impl Frame {
         TOKEN.fetch_add(1, Ordering::SeqCst)
     }
 
-    pub fn buffer(&self) -> &core::BufferId {
-        &self.buffer
+    pub fn buffer(&self) -> Ref<core::Buffer> {
+        self.buffer.borrow()
     }
 
     pub fn id(&self) -> FrameId {
@@ -121,16 +123,16 @@ impl Frame {
         self.cache.lines_mut()
     }
 
-    pub fn update_line_cache(&mut self, invalidation: Invalidation, buffer: &core::Buffer) {
+    pub fn update_line_cache(&mut self, invalidation: Invalidation) {
         match invalidation {
-            Invalidation::Init => self.fill_cache(buffer),
-            Invalidation::ScrollUp { pixels, lines } => self.scroll_up(pixels, lines, buffer),
-            Invalidation::ScrollDown { pixels, lines } => self.scroll_down(pixels, lines, buffer),
+            Invalidation::Init => self.fill_cache(),
+            Invalidation::ScrollUp { pixels, lines } => self.scroll_up(pixels, lines),
+            Invalidation::ScrollDown { pixels, lines } => self.scroll_down(pixels, lines),
         }
     }
 
-    fn fill_cache(&mut self, buffer: &core::Buffer) {
-        let lines = buffer.request_lines(self.view.start, self.view.end);
+    fn fill_cache(&mut self) {
+        let lines = self.buffer.borrow().request_lines(self.view.start, self.view.end);
         let mut populated_lines = 0;
         for (idx, line) in lines.into_iter().enumerate() {
             // if we have populated the line cache before viewing all of the lines
@@ -221,89 +223,20 @@ impl Frame {
     fn update_view_from_cursor(&mut self) -> Option<isize> {
         if self.view.contains(&self.cursor.line) {
             None
+        } else if self.cursor.line < self.view.start {
+            let diff = self.view.start - self.cursor.line;
+            self.view.start = self.cursor.line;
+            Some(diff as isize)
+        } else if self.cursor.line > self.view.end {
+            let diff = (self.cursor.line - self.view.end) as isize;
+            self.view.end = self.cursor.line;
+            Some(-diff)
         } else {
-            if self.cursor.line < self.view.start {
-                let diff = self.view.start - self.cursor.line;
-                self.view.start = self.cursor.line;
-                Some(diff as isize)
-            } else if self.cursor.line > self.view.end {
-                let diff = (self.cursor.line - self.view.end) as isize;
-                self.view.end = self.cursor.line;
-                Some(-diff)
-            } else {
-                unreachable!()
-            }
+            unreachable!()
         }
     }
 
-    pub fn scroll_up(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
-        let view_length = self.view.len();
-        let cache_lines = self.lines_mut();
+    pub fn scroll_up(&mut self, pixels: usize, lines: usize) {}
 
-        // move the still visable lines to the new line of the cache.
-        for idx in 0..view_length - lines {
-            cache_lines[idx] = cache_lines[idx + lines].clone();
-        }
-
-        // create a view into the buffer of only the needed lines.
-        let mut updated_view = self.view.clone();
-        updated_view.start = updated_view.end - lines;
-
-        // update the line cache with the new lines.
-        let buffer_lines = buffer.request_lines(updated_view.start, updated_view.end);
-        let mut populated_lines = self.view.len() - lines;
-        for (idx, line) in buffer_lines.into_iter().enumerate() {
-            if populated_lines >= self.view.len() {
-                break;
-            }
-
-            let cursor = self.get_cursors(self.view.end + idx - lines);
-
-            for (offset, text) in self
-                .layout_line(self.view.end + idx - lines, line, cursor)
-                .into_iter()
-                .enumerate()
-            {
-                self.set_line(self.view.len() + idx - lines + offset, text);
-                populated_lines += 1;
-            }
-        }
-    }
-
-    pub fn scroll_down(&mut self, pixels: usize, lines: usize, buffer: &core::Buffer) {
-        let view_length = self.view.len();
-
-        let cache_lines = self.lines_mut();
-
-        for idx in (0..view_length - lines).rev() {
-            cache_lines[idx + lines] = cache_lines[idx].clone();
-        }
-
-        let mut updated_view = self.view.clone();
-        updated_view.end = updated_view.start + lines;
-
-        let mut updated_view = self.view.clone();
-        updated_view.start = updated_view.end - lines;
-
-        // update the line cache with the new lines.
-        let buffer_lines = buffer.request_lines(updated_view.start, updated_view.end);
-        let mut populated_lines = self.view.len() - lines;
-        for (idx, line) in buffer_lines.into_iter().enumerate().rev() {
-            if populated_lines >= self.view.len() {
-                break;
-            }
-
-            let cursor = self.get_cursors(self.view.start + idx);
-
-            for (offset, text) in self
-                .layout_line(self.view.start + idx, line, cursor)
-                .into_iter()
-                .enumerate()
-                .rev()
-            {
-                self.set_line(self.view.start + offset, text);
-                populated_lines += 1;
-            }
-        }
-    }
+    pub fn scroll_down(&mut self, pixels: usize, lines: usize) {}
 }
