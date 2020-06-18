@@ -1,19 +1,17 @@
-
 use super::AppEvent;
 use crate::glutin::{
-    event::{self, ElementState, WindowEvent, ModifiersState},
+    event::{self, ElementState, ModifiersState, WindowEvent},
     event_loop,
     platform::desktop::EventLoopExtDesktop,
 };
 
+use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::sync::mpsc::Receiver;
 
-use crate::renderer::{Window, Renderer, Renderable};
 use super::{App, Application};
 use crate::core::Update;
-
+use crate::renderer::{Renderable, Renderer, Window};
 
 pub enum ClickState {
     None,
@@ -52,7 +50,6 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
-
     pub fn new(renderer: Renderer, elp: event_loop::EventLoopProxy<AppEvent>) -> Self {
         Self {
             renderer,
@@ -97,7 +94,9 @@ impl EventHandler {
                 event,
             } => match event {
                 Resized(size) => {
-                    handler.renderer.update_perspective(size.width as i32, size.height as i32);
+                    handler
+                        .renderer
+                        .update_perspective(size.width as i32, size.height as i32);
                     app.update_size(size.width, size.height);
                 }
                 Moved(pos) => {}
@@ -112,9 +111,7 @@ impl EventHandler {
                     device_id,
                     input,
                     is_synthetic,
-                } => {
-                    app.handle_keyboard_input(input, &handler.modifiers)
-                }
+                } => app.handle_keyboard_input(input, &handler.modifiers),
                 CursorMoved {
                     device_id,
                     position,
@@ -178,7 +175,12 @@ impl EventHandler {
         }
     }
 
-    pub fn run(&mut self, app: App, mut event_loop: event_loop::EventLoop<AppEvent>, receiver: Receiver<Update>) {
+    pub fn run(
+        &mut self,
+        app: App,
+        mut event_loop: event_loop::EventLoop<AppEvent>,
+        receiver: Receiver<Update>,
+    ) {
         let mut event_queue = Vec::new();
 
         event_loop.run_return(|event, el, cf| {

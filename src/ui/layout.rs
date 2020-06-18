@@ -1,6 +1,6 @@
 // use euclid::default::Vector2D;
-use crate::pathfinder_geometry::vector::Vector2F;
 use super::frame::FrameId;
+use crate::pathfinder_geometry::vector::Vector2F;
 
 #[derive(Debug, Clone)]
 pub struct FrameInfo {
@@ -10,25 +10,23 @@ pub struct FrameInfo {
 pub enum Layout {
     Vertical,
     Horizontal,
-    Frame(FrameInfo)
+    Frame(FrameInfo),
 }
 
 #[derive(Debug, Clone)]
 pub struct FrameLayout {
-    layout: Vec<Layout>
+    layout: Vec<Layout>,
 }
 
 pub struct FrameIter<'a> {
     // parent: usize,
     // idx: usize,
-    layout: std::slice::Iter<'a, Layout>
+    layout: std::slice::Iter<'a, Layout>,
 }
 
 impl FrameLayout {
     pub fn new() -> Self {
-        Self {
-            layout: Vec::new(),
-        }
+        Self { layout: Vec::new() }
     }
 
     pub fn get(&self, idx: usize) -> Option<&Layout> {
@@ -45,16 +43,14 @@ impl FrameLayout {
 
     pub fn frame_iter(&self) -> FrameIter {
         FrameIter {
-                // parent: 0,
-                // idx: 0,
-                layout: self.layout.iter()
+            // parent: 0,
+            // idx: 0,
+            layout: self.layout.iter(),
         }
     }
 }
 
-impl<'a> FrameIter<'a> {
-
-}
+impl<'a> FrameIter<'a> {}
 
 impl<'a> std::iter::Iterator for FrameIter<'a> {
     type Item = &'a FrameInfo;
@@ -64,9 +60,7 @@ impl<'a> std::iter::Iterator for FrameIter<'a> {
         loop {
             match self.layout.next() {
                 Some(layout) => match layout {
-                    Vertical | Horizontal => {
-                        continue
-                    }
+                    Vertical | Horizontal => continue,
                     Frame(info) => {
                         // if self.idx == self.parent * 2 + 1 {
                         //     self.idx = self.parent * 2 + 2;
@@ -76,7 +70,7 @@ impl<'a> std::iter::Iterator for FrameIter<'a> {
                         // }
                         return Some(info);
                     }
-                }
+                },
                 None => return None,
             }
         }

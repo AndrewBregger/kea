@@ -1,6 +1,6 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::collections::BTreeMap;
 use super::Color;
+use std::collections::BTreeMap;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
 pub struct StyleId(pub usize);
@@ -21,10 +21,7 @@ pub struct Span {
 
 impl Span {
     pub fn new(start: usize, end: usize) -> Self {
-        Self {
-            start,
-            end
-        }
+        Self { start, end }
     }
 
     #[inline]
@@ -41,10 +38,7 @@ pub struct StyleSpan {
 
 impl StyleSpan {
     pub fn new(style: StyleId, span: Span) -> Self {
-        Self {
-            style,
-            span
-        }
+        Self { style, span }
     }
 
     #[inline]
@@ -80,7 +74,13 @@ pub struct Style {
 }
 
 impl Style {
-    pub fn new(font_idx: usize, fg_color: Color, bg_color: Color, italic: bool, underline: bool) -> Self {
+    pub fn new(
+        font_idx: usize,
+        fg_color: Color,
+        bg_color: Color,
+        italic: bool,
+        underline: bool,
+    ) -> Self {
         Self {
             id: StyleId::next(),
             font_idx,
@@ -124,7 +124,7 @@ pub struct StyleMap {
 impl StyleMap {
     pub fn new() -> Self {
         Self {
-            styles: BTreeMap::new()
+            styles: BTreeMap::new(),
         }
     }
 

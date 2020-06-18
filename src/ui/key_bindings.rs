@@ -1,13 +1,13 @@
 use std::collections::BTreeMap;
 
-use crate::glutin::event::{ModifiersState, VirtualKeyCode};
-use crate::app::Config;
 use super::edits::Operation;
+use crate::app::Config;
+use crate::glutin::event::{ModifiersState, VirtualKeyCode};
 use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialOrd, PartialEq)]
 pub struct Key {
-    key:  VirtualKeyCode,
+    key: VirtualKeyCode,
     mods: ModifiersState,
 }
 

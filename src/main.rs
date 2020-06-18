@@ -4,22 +4,20 @@
 // @TODO: remove
 // #![feature(backtrace)]
 
-extern crate thiserror;
 extern crate pathfinder_geometry;
+extern crate thiserror;
 // extern crate euclid;
-extern crate glutin;
 extern crate gl;
+extern crate glutin;
 
 mod app;
 mod core;
-mod ui;
-mod renderer;
 mod font;
-
+mod renderer;
+mod ui;
 
 use log::{debug, error, info, trace, warn};
-use renderer::{Window, window::LogicalSize};
-
+use renderer::{window::LogicalSize, Window};
 
 fn main() {
     let config = app::Config::load_config();

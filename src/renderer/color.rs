@@ -48,5 +48,7 @@ impl Color {
         Color::rgb(0.0f32, 0.0f32, 0.0f32)
     }
 
-    pub fn uniform(ch: f32) -> Color { Color::rgb(ch, ch, ch) }
+    pub fn uniform(ch: f32) -> Color {
+        Color::rgb(ch, ch, ch)
+    }
 }

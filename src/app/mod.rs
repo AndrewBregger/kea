@@ -1,17 +1,20 @@
-
-mod config;
 mod application;
+mod config;
 mod event_handler;
 
-pub use config::{Config};
-use kea::{self, utils::log_file_path, comm::Receiver};
-use super::renderer::{self, Renderer, window::{Window, LogicalSize}};
-use application::{Application, App, WeakApp};
-use event_handler::{EventHandler};
-use std::sync::{Arc, Mutex, Weak};
-use crate::font::{FontCollection, GlyphId, Font, FontMetrics};
+use super::renderer::{
+    self,
+    window::{LogicalSize, Window},
+    Renderer,
+};
+use crate::core::{self, Edit, KeaCore, Update};
+use crate::font::{Font, FontCollection, FontMetrics, GlyphId};
 use crate::renderer::platform::atlas::FontAtlas;
-use crate::core::{self, KeaCore, Edit, Update};
+use application::{App, Application, WeakApp};
+pub use config::Config;
+use event_handler::EventHandler;
+use kea::{self, comm::Receiver, utils::log_file_path};
+use std::sync::{Arc, Mutex, Weak};
 
 use glutin::event_loop::EventLoop;
 
@@ -34,7 +37,13 @@ pub enum AppError {
 
 pub fn run(config: Config) -> Result<(), AppError> {
     let event_loop = EventLoop::<AppEvent>::with_user_event();
-    let window = Window::<glutin::NotCurrent>::new(&event_loop, LogicalSize::new(500 as _, 400 as _), "kea", &config).unwrap();
+    let window = Window::<glutin::NotCurrent>::new(
+        &event_loop,
+        LogicalSize::new(500 as _, 400 as _),
+        "kea",
+        &config,
+    )
+    .unwrap();
     let (app_duplex, core_duplex) = kea::comm::duplex::<Edit, Update>();
     let (app_sender, app_receiver) = app_duplex.decompose();
 
@@ -59,12 +68,13 @@ pub fn run(config: Config) -> Result<(), AppError> {
 
     let font_atlas = FontAtlas::from_collection(&mut font_collection, |atlas, font| {
         // println!("Loading Font: {:?}", font.desc());
-        for c in 32 as u8 .. 127 as u8 {
+        for c in 32 as u8..127 as u8 {
             let rglyph = font.rasterize_glyph(c as char, font_size)?;
             atlas.add_glyph(&rglyph);
         }
         Ok(())
-    }).map_err(AppError::FontError)?;
+    })
+    .map_err(AppError::FontError)?;
 
     let mut renderer = Renderer::new();
     renderer.init().map_err(|e| {
@@ -95,7 +105,10 @@ pub fn run(config: Config) -> Result<(), AppError> {
     Ok(())
 }
 
-fn application_update_thread(app: WeakApp, receiver: Receiver<Update>) -> std::thread::JoinHandle<()> {
+fn application_update_thread(
+    app: WeakApp,
+    receiver: Receiver<Update>,
+) -> std::thread::JoinHandle<()> {
     unimplemented!();
 }
 

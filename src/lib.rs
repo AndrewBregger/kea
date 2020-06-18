@@ -1,19 +1,19 @@
-use std::{rc::Rc, cell::RefCell};
+use std::{cell::RefCell, rc::Rc};
 pub type Ptr<T> = Rc<RefCell<T>>;
 
-pub fn ptr<T>(val: T) ->  Ptr<T> {
+pub fn ptr<T>(val: T) -> Ptr<T> {
     Ptr::new(RefCell::new(val))
 }
 
 pub mod comm {
-    pub use std::sync::mpsc::{self, Sender, Receiver};
+    pub use std::sync::mpsc::{self, Receiver, Sender};
 
     /// Two way channel
     /// S is being sent
     /// A is being returned
     pub struct Duplex<S, A> {
         c1: Sender<S>,
-        c2: Receiver<A>
+        c2: Receiver<A>,
     }
 
     impl<S, A> Duplex<S, A> {
@@ -52,25 +52,28 @@ pub mod comm {
 }
 
 pub mod utils {
-    #[cfg(any(target_os="linux", target_os="macos"))]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub fn log_file_path() -> String {
         "./logs/kea.log".to_string()
     }
 
-    #[cfg(not(any(target_os="linux", target_os="macos")))]
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     pub fn log_file_path() -> String {
         "./logs/kea.log".to_string()
     }
 
     pub fn spawn_thread<F, T>(name: &str, f: F) -> std::thread::JoinHandle<T>
-        where F: Fn() -> T,
-              F: Send + 'static,
-              T: Send + 'static {
-        std::thread::Builder::new().name(name.to_string()).spawn(f).expect(format!("Failed to construct thread: {}", name).as_str())
+    where
+        F: Fn() -> T,
+        F: Send + 'static,
+        T: Send + 'static,
+    {
+        std::thread::Builder::new()
+            .name(name.to_string())
+            .spawn(f)
+            .expect(format!("Failed to construct thread: {}", name).as_str())
     }
 }
-
-
 
 #[cfg(test)]
 mod test {

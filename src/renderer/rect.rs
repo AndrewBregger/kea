@@ -1,12 +1,12 @@
 use std::convert::From;
 
 // use euclid::default::Vector2D;
-use crate::pathfinder_geometry::vector::Vector2F;
-use crate::glutin::dpi::{LogicalPosition, LogicalSize, Pixel};
 use super::Color;
+use crate::glutin::dpi::{LogicalPosition, LogicalSize, Pixel};
+use crate::pathfinder_geometry::vector::Vector2F;
 
 #[derive(Debug, Clone)]
-pub struct Rect  {
+pub struct Rect {
     pub pos: Vector2F,
     pub width: f32,
     pub height: f32,
@@ -36,7 +36,6 @@ impl Rect {
         self.set_color(color);
         self
     }
-
 
     pub fn set_color(&mut self, color: Color) {
         self.bg_color = color

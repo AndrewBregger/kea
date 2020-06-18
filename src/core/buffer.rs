@@ -1,11 +1,10 @@
 use std::fs::File;
-use std::path::{PathBuf, Path};
 use std::io::BufReader;
+use std::path::{Path, PathBuf};
 
 use ropey::Rope;
 
 use super::CoreError;
-
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BufferId(usize);
@@ -22,32 +21,31 @@ fn map_error(e: std::io::Error, path: &PathBuf) -> CoreError {
 struct Line {
     // line number in line space (starts at 1)
     line: usize,
-	/// the indices
-    indices: LineIndices
+    /// the indices
+    indices: LineIndices,
 }
 
 impl Line {
     fn new(line: usize, indices: LineIndices) -> Self {
-        Self {
-			line,
-			indices,
-        }
+        Self { line, indices }
     }
 
     fn start_index(&self) -> usize {
         self.indices.start
     }
 
-	fn end_index(&self) -> usize {
-    	self.indices.end
-	}
+    fn end_index(&self) -> usize {
+        self.indices.end
+    }
 
-    fn end_line(&self) -> usize { self.indices.end_line }
+    fn end_line(&self) -> usize {
+        self.indices.end_line
+    }
 }
 
 struct LineIndices {
-	start: usize,
-	end: usize,
+    start: usize,
+    end: usize,
     end_line: usize,
 }
 
@@ -61,21 +59,19 @@ impl LineIndices {
     }
 
     fn extend(&mut self, diff: usize) {
-        self.start    += diff;
-        self.end      += diff;
+        self.start += diff;
+        self.end += diff;
         self.end_line += diff;
     }
 }
 
 struct ShallowCache {
-	lines: Vec<Line>
+    lines: Vec<Line>,
 }
 
 impl ShallowCache {
     fn new() -> Self {
-        Self {
-			lines: Vec::new()
-        }
+        Self { lines: Vec::new() }
     }
 
     fn push_line(&mut self, line: Line) {
@@ -87,9 +83,9 @@ impl ShallowCache {
     }
 
     fn replace_line(&mut self, idx: usize, line: Line) {
-       	if idx < self.lines.len() {
-       		self.lines[idx] = line;
-       	}
+        if idx < self.lines.len() {
+            self.lines[idx] = line;
+        }
     }
 
     fn get(&self, idx: usize) -> Option<&Line> {
@@ -104,11 +100,17 @@ impl ShallowCache {
         self.lines.len()
     }
 
-    fn slice<R: std::slice::SliceIndex<[Line]>>(&self, r: R) -> Option<&<R as std::slice::SliceIndex<[Line]>>::Output> {
+    fn slice<R: std::slice::SliceIndex<[Line]>>(
+        &self,
+        r: R,
+    ) -> Option<&<R as std::slice::SliceIndex<[Line]>>::Output> {
         self.lines.get(r)
     }
 
-    fn slice_mut<R: std::slice::SliceIndex<[Line]>>(&mut self, r: R) -> Option<&mut <R as std::slice::SliceIndex<[Line]>>::Output> {
+    fn slice_mut<R: std::slice::SliceIndex<[Line]>>(
+        &mut self,
+        r: R,
+    ) -> Option<&mut <R as std::slice::SliceIndex<[Line]>>::Output> {
         self.lines.get_mut(r)
     }
 }
@@ -127,11 +129,11 @@ impl Buffer {
         let id = BufferId(id);
 
         let content = File::open(path.as_ref())
-                        .and_then(|f| Ok(BufReader::new(f)))
-                        .and_then(|r| Rope::from_reader(r))
-                        .map_err(|e| map_error(e, &path.as_ref().to_path_buf()))?;
-        
-       	let mut buffer = Self {
+            .and_then(|f| Ok(BufReader::new(f)))
+            .and_then(|r| Rope::from_reader(r))
+            .map_err(|e| map_error(e, &path.as_ref().to_path_buf()))?;
+
+        let mut buffer = Self {
             id,
             path: Some(path.as_ref().to_path_buf()),
             content,
@@ -160,39 +162,45 @@ impl Buffer {
         &self.content
     }
 
-	/// invalids the shallow line cache from start_line to the end of the buffer.
+    /// invalids the shallow line cache from start_line to the end of the buffer.
     pub fn invalidate_line_cache(&mut self, start_line: usize) {
-        let mut last_line_byte = self.shallow_cache.get(start_line).map_or(0, |l| l.start_index());
+        let mut last_line_byte = self
+            .shallow_cache
+            .get(start_line)
+            .map_or(0, |l| l.start_index());
         for (idx, line) in self.content.lines().skip(start_line).enumerate() {
             let idx = idx + start_line;
             let bytes = line.len_bytes();
-            let bytes_end_line=
-                if bytes >= 2 && line.char(bytes - 2) == '\r' { bytes - 2 }
-                else if bytes >= 1 && line.char(bytes - 1) == '\n' { bytes - 1 }
-                else { bytes };
+            let bytes_end_line = if bytes >= 2 && line.char(bytes - 2) == '\r' {
+                bytes - 2
+            } else if bytes >= 1 && line.char(bytes - 1) == '\n' {
+                bytes - 1
+            } else {
+                bytes
+            };
 
             if bytes == 0 {
                 continue;
             }
 
-
- 
-            let line = Line::new(idx + 1,
-                                 LineIndices::new(
-                                     last_line_byte,
-                                     last_line_byte + bytes,
-                                     last_line_byte + bytes_end_line));
+            let line = Line::new(
+                idx + 1,
+                LineIndices::new(
+                    last_line_byte,
+                    last_line_byte + bytes,
+                    last_line_byte + bytes_end_line,
+                ),
+            );
 
             if idx < self.shallow_cache.len() {
                 self.shallow_cache.replace_line(idx, line);
-            }
-            else {
+            } else {
                 self.shallow_cache.push_line(line);
             }
- 
+
             last_line_byte += bytes;
         }
- 
+
         for line in &self.shallow_cache.lines {
             let start = line.start_index();
             let end = line.end_line();
@@ -209,20 +217,21 @@ impl Buffer {
             lines[0].indices.end_line += diff;
             lines[0].indices.end += diff;
 
-            lines.iter_mut().skip(1).for_each(|line| line.indices.extend(diff));
+            lines
+                .iter_mut()
+                .skip(1)
+                .for_each(|line| line.indices.extend(diff));
         }
-
     }
 
     pub fn request_lines(&self, start: usize, end: usize) -> Vec<String> {
         let mut res = Vec::new();
 
         if let Some(lines) = self.shallow_cache.slice(start..end) {
-    		for line in lines {
-
-				let val = String::from(self.content.slice(line.start_index()..line.end_line()));
-				res.push(val);
-    		}
+            for line in lines {
+                let val = String::from(self.content.slice(line.start_index()..line.end_line()));
+                res.push(val);
+            }
         }
 
         res

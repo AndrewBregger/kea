@@ -1,28 +1,35 @@
-use std::sync::{Arc, Mutex, Weak, MutexGuard};
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::collections::BTreeMap;
+use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
 use kea;
-use kea::comm::{Duplex, duplex, channel, Sender};
-use log::{info, debug, error};
+use kea::comm::{channel, duplex, Duplex, Sender};
+use log::{debug, error, info};
 
 // use crate::euclid::{default::Vector2D, vec2};
-use crate::glutin::{event_loop::EventLoop, PossiblyCurrent, event::ModifiersState, event::{KeyboardInput, VirtualKeyCode}};
-use crate::pathfinder_geometry::vector::{Vector2F, vec2f};
-use crate::renderer::{Renderer, RenderContext, Window, window::LogicalSize, Rect, Color, Renderable, Glyph, TextLine};
-use crate::core::{self, KeaCore, Edit, Update};
-use crate::ui::*;
+use crate::core::{self, Edit, KeaCore, Update, Core};
 use crate::font::{Font, FontCollection};
+use crate::glutin::{
+    event::ModifiersState,
+    event::{KeyboardInput, VirtualKeyCode},
+    event_loop::EventLoop,
+    PossiblyCurrent,
+};
+use crate::pathfinder_geometry::vector::{vec2f, Vector2F};
+use crate::renderer::{
+    window::LogicalSize, Color, Glyph, Rect, RenderContext, Renderable, Renderer, TextLine, Window,
+};
+use crate::ui::*;
 
-use super::{Config, AppEvent, AppError};
-use std::path::Component::CurDir;
+use super::{AppError, AppEvent, Config};
 use crate::renderer::window::event::WindowEvent::{CursorEntered, CursorMoved};
+use std::path::Component::CurDir;
 
 pub struct App(Arc<Mutex<Application>>);
 
 impl App {
-    pub fn new(app: Application, ) -> Self {
+    pub fn new(app: Application) -> Self {
         App(Arc::new(Mutex::new(app)))
     }
 
@@ -35,11 +42,10 @@ impl App {
     }
 }
 
-
 pub struct WeakApp(Weak<Mutex<Application>>);
 
 impl WeakApp {
-    pub fn upgrade(&self) ->  App {
+    pub fn upgrade(&self) -> App {
         match self.0.upgrade() {
             Some(core) => App(core),
             None => panic!("Kea Core was not created"),
@@ -75,8 +81,8 @@ pub struct Application {
     layout: FrameLayout,
     /// frame actively being interacted with
     active_frame: Option<FrameId>,
-	/// the editor core.
-    core: KeaCore,
+    /// the editor core.
+    core: Core,
     /// runtime information for the renderer.
     context: RenderContext,
     /// state of the editor
@@ -84,9 +90,17 @@ pub struct Application {
 }
 
 impl Application {
-    pub fn with_config(window: Window<PossiblyCurrent>, sender: Sender<Edit>, font_collection: FontCollection, config: Config) -> Result<Self, super::AppError> {
+    pub fn with_config(
+        window: Window<PossiblyCurrent>,
+        sender: Sender<Edit>,
+        font_collection: FontCollection,
+        config: Config,
+    ) -> Result<Self, super::AppError> {
         let el = EventLoop::<AppEvent>::with_user_event();
-        let core = KeaCore::new(&config);
+        let core = Core::new();
+
+        let font_size = config.font_size();
+        let dpi_factor = window.dpi_factor();
 
         Ok(Self {
             // renderer: context,
@@ -98,9 +112,9 @@ impl Application {
             layout: FrameLayout::new(),
             active_frame: None,
             core,
-            context: RenderContext::new(font_collection),
+            context: RenderContext::new(font_collection, font_size, dpi_factor as f32),
             state: EditState {
-                mode: EditMode::Normal
+                mode: EditMode::Normal,
             },
         })
     }
@@ -122,75 +136,60 @@ impl Application {
         let size = vec2f(window_size.width as f32, window_size.height as f32);
         let origin = Vector2F::zero();
 
-        let metrics = self.context.fonts().default_font()
-        	.metrics()
-        	.scale_with(self.config.font_size(), self.window.dpi_factor() as f32);
+        let metrics = self
+            .context
+            .fonts()
+            .default_font()
+            .metrics()
+            .scale_with(self.config.font_size(), self.window.dpi_factor() as f32);
 
-		let mut core = self.core.inner();
 
-		let buffer_id = core.open_file(core::BufferInfo { path: Some(PathBuf::from_str("src/main.rs").unwrap())  }).unwrap();
-		let buffer = core.get_buffer(&buffer_id).unwrap();
+        let buffer_id = self.core
+            .open_file(core::BufferInfo {
+                path: Some(PathBuf::from_str("src/main.rs").unwrap()),
+            })
+            .unwrap();
+        let buffer = self.core.get_buffer(&buffer_id).unwrap();
 
         let lines = Frame::compute_lines(size.y(), &metrics);
-		let mut frame = Frame::new(buffer_id, size, origin, lines);
-		frame.update_line_cache(Invalidation::Init, &buffer);
+        let mut frame = Frame::new(buffer_id, size, origin, lines);
+        frame.update_line_cache(Invalidation::Init, &buffer);
 
-		frame.set_active(true);
+        frame.set_active(true);
 
-		let frame_id = frame.id();
+        let frame_id = frame.id();
 
-		self.active_frame = Some(frame_id);
-		self.frames.insert(frame_id, frame);
-		self.layout.push_frame(FrameInfo { frame: frame_id });
-    }
-
-    fn position_line(line: &Text<TextLine>, font: &Font) -> TextLine {
-        let mut glyphs = Vec::new();
-
-        let mut x = 0.0;
-        for ch in line.text.chars() {
-            if let Some(info) = font.info(ch) {
-                let glyph = Glyph {
-                    ch,
-                    x,
-                };
-
-                glyphs.push(glyph);
-                x += info.advance.x();
-            }
-        }
-
-        TextLine::new(glyphs, line.styles.clone())
+        self.active_frame = Some(frame_id);
+        self.frames.insert(frame_id, frame);
+        self.layout.push_frame(FrameInfo { frame: frame_id });
     }
 
     pub fn handle_keyboard_input(&mut self, input: KeyboardInput, modifiers: &ModifiersState) {
         // let edit_mode = self.state.mode;
         // if let Some(operation) =
-        debug!("Keyboard Input: {:?} Modifier State: {:?}", input, modifiers);
+        debug!(
+            "Keyboard Input: {:?} Modifier State: {:?}",
+            input, modifiers
+        );
         if let Some(key) = input.virtual_keycode {
             match key {
                 VirtualKeyCode::Up => {
                     if let Some(frame) = self.active_frame_mut() {
+                        let buffer_id = frame.buffer().clone();
+                        let buffer = self.core.get_buffer(&buffer_id).unwrap();
                         if let Some(diff) = frame.move_cursor(CursorMotion::Up, 1) {
-                            // let buffer = self.core.inner().get_buffer(frame.buffer()).unwrap();
-                            // if diff < 0 {
-                            //     frame.scroll_down(0, diff.abs() as usize, &buffer);
-                            // }
-                            // else {
-                            //     frame.scroll_up(0, diff as usize, &buffer);
-                            // }
+                            if diff < 0 {
+                                frame.scroll_down(0, diff.abs() as usize, &buffer);
+                            }
+                            else {
+                                frame.scroll_up(0, diff as usize, &buffer);
+                            }
                         }
                     }
                 }
-                VirtualKeyCode::Down => {
-
-                }
-                VirtualKeyCode::Left => {
-
-                }
-                VirtualKeyCode::Right => {
-
-                }
+                VirtualKeyCode::Down => {}
+                VirtualKeyCode::Left => {}
+                VirtualKeyCode::Right => {}
                 _ => {}
             }
         }
@@ -199,8 +198,7 @@ impl Application {
     pub fn active_frame(&self) -> Option<&Frame> {
         if let Some(id) = self.active_frame.as_ref() {
             self.frames.get(id)
-        }
-        else {
+        } else {
             info!("No Active Frame");
             None
         }
@@ -209,8 +207,7 @@ impl Application {
     pub fn active_frame_mut(&mut self) -> Option<&mut Frame> {
         if let Some(id) = self.active_frame.as_ref() {
             self.frames.get_mut(id)
-        }
-        else {
+        } else {
             info!("No Active Frame");
             None
         }
@@ -222,37 +219,7 @@ impl Renderable for Application {
         for frame in self.layout.frame_iter() {
             // println!("{:?}", frame);
             if let Some(frame) = self.frames.get_mut(&frame.frame) {
-                let width = frame.width();
-        		let height = frame.height();
-                let origin = frame.origin();
-                let font = self.context.fonts().default_font();
-                let metrics = font.metrics().scale_with(self.config.font_size(), font.device_pixel_ratio);
-                let start_y = metrics.ascent;
-        		let start_x = 0.0;
-
-        		let x = start_x + origin.x();
-        		let mut y = start_y + origin.y();
-
-        		for line in frame.lines_mut() {
-        			if let Some(line) = line {
-
-                        if line.assoc.is_none() {
-                            // generate glyphs
-                            let text_line = Self::position_line(&line, font);
-                            line.assoc = Some(text_line);
-                        }
-
-                        if let Some(text) = line.assoc.as_ref() {
-                            // render glyphs.
-                            renderer.render_line(&self.context, text, x, y, self.config.font_size());
-
-                            if !line.cursors.is_empty() {
-                                renderer.render_cursors(&self.context, text, line.cursors.as_slice(), y, self.config.font_size());
-                            }
-                        }
-        			}
-                    y += metrics.line_height();
-        		}
+                renderer.render_frame(&self.context, frame);
             }
         }
 

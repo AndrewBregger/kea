@@ -44,11 +44,15 @@ pub struct Window<Context: ContextCurrentState> {
 //        For now I am only using the generic window builder.
 
 impl Window<NotCurrent> {
-
     // Change size of a WindowConfig or Config object so the window
     // is created to some properties specified by the user.
     // A config created by loading some config file (rem.config or whatever)
-    pub fn new<T>(event_loop: &EventLoop<T>, size: LogicalSize<f32>, title: &str, config: &Config) -> Result<Self> {
+    pub fn new<T>(
+        event_loop: &EventLoop<T>,
+        size: LogicalSize<f32>,
+        title: &str,
+        config: &Config,
+    ) -> Result<Self> {
         let context = Self::build_window(event_loop, size, title, config)?;
         Ok(Self {
             context,
@@ -56,13 +60,12 @@ impl Window<NotCurrent> {
         })
     }
 
-
     #[cfg(any(target_os = "linux", target_os = "windows"))]
     fn build_window<T>(
         event_loop: &EventLoop<T>,
         size: LogicalSize<f32>,
         title: &str,
-        _config: &Config
+        _config: &Config,
     ) -> Result<WindowedContext<NotCurrent>> {
         use glutin::{window::WindowBuilder, ContextBuilder};
 
@@ -98,7 +101,7 @@ impl Window<NotCurrent> {
         event_loop: &EventLoop<T>,
         size: LogicalSize<f32>,
         title: &str,
-        _config: &Config
+        _config: &Config,
     ) -> Result<WindowedContext<NotCurrent>> {
         // use super::glutin::platform::macos::WindowBuilderExtMacOS;
         use super::glutin::{window::WindowBuilder, ContextBuilder};
@@ -129,13 +132,14 @@ impl Window<NotCurrent> {
     }
 
     pub fn make_current(self) -> Result<Window<PossiblyCurrent>> {
-        let Window { context, focused} = self;
-        let context = unsafe { context.make_current().map_err(|(_, e)| WindowError::ContextError(e))? };
-        
-        Ok(Window::<PossiblyCurrent> {
-            context,
-            focused
-        })
+        let Window { context, focused } = self;
+        let context = unsafe {
+            context
+                .make_current()
+                .map_err(|(_, e)| WindowError::ContextError(e))?
+        };
+
+        Ok(Window::<PossiblyCurrent> { context, focused })
     }
 }
 
@@ -150,17 +154,18 @@ impl Window<PossiblyCurrent> {
     }
 
     pub fn make_not_current(self) -> Result<Window<NotCurrent>> {
-        let Window { context, focused} = self;
-        let context = unsafe { context.make_not_current().map_err(|(_, e)| WindowError::ContextError(e))? };
-        
-        Ok(Window::<NotCurrent> {
-            context,
-            focused
-        })
+        let Window { context, focused } = self;
+        let context = unsafe {
+            context
+                .make_not_current()
+                .map_err(|(_, e)| WindowError::ContextError(e))?
+        };
+
+        Ok(Window::<NotCurrent> { context, focused })
     }
 }
 
-impl <Context: ContextCurrentState> Window<Context> {
+impl<Context: ContextCurrentState> Window<Context> {
     // gets the dpi of the window, this can be be changed by user action
     // such as when the window is moved to a different monitor.
     // This is needed for font rendering.
@@ -195,4 +200,3 @@ impl <Context: ContextCurrentState> Window<Context> {
         self.context.is_current()
     }
 }
-

@@ -149,7 +149,8 @@ pub trait Shader {
     fn name(&self) -> &str;
 
     fn bounded<P>(&self, functor: P)
-        where P: FnOnce(&Self::Object);
+    where
+        P: FnOnce(&Self::Object);
 }
 
 pub struct RectShader {
@@ -160,7 +161,6 @@ pub struct RectShader {
 
 impl RectShader {
     pub fn create() -> Self {
-
         Self {
             handle: 0,
             per_loc: 0,
@@ -214,8 +214,9 @@ impl Shader for RectShader {
     }
 
     fn bounded<P>(&self, functor: P)
-        where P: FnOnce(&Self::Object) {
-
+    where
+        P: FnOnce(&Self::Object),
+    {
         self.bind();
         functor(self);
         self.unbind();
@@ -240,7 +241,6 @@ impl TextShader {
     }
 
     pub fn init(&mut self) -> Result<(), RenderError> {
-
         let vs_src = load_file("./shaders/text_vert.glsl");
         let fs_src = load_file("./shaders/text_frag.glsl");
 
@@ -297,10 +297,10 @@ impl Shader for TextShader {
         }
     }
 
-
     fn bounded<P>(&self, functor: P)
-        where P: FnOnce(&Self::Object) {
-
+    where
+        P: FnOnce(&Self::Object),
+    {
         self.bind();
         functor(self);
         self.unbind();

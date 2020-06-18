@@ -25,13 +25,19 @@ pub struct View {
 }
 
 impl View {
-    pub fn new(id: usize, buffer: BufferId, size: Vector2F, start_line: usize, lines: usize) -> Result<Self, CoreError> {
+    pub fn new(
+        id: usize,
+        buffer: BufferId,
+        size: Vector2F,
+        start_line: usize,
+        lines: usize,
+    ) -> Result<Self, CoreError> {
         Ok(Self {
             id: ViewId(id),
             size,
             buffer,
             start_line,
-            lines
+            lines,
         })
     }
 

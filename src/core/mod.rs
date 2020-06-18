@@ -2,33 +2,31 @@ extern crate ropey;
 
 use ropey::{Rope, RopeSlice};
 
-use std::sync::{Arc, Mutex, Weak, MutexGuard};
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
 use crate::app::Config;
 
-use log::{error};
-use kea;
+// use kea;
+use log::error;
 
-mod edit;
 mod buffer;
+mod edit;
 mod view;
 
-use edit::{Core};
-pub use edit::{Update, Edit, BufferInfo};
+pub use edit::{BufferInfo, Core, Edit, Update};
 
 pub use buffer::{Buffer, BufferId};
-use view::{View};
-pub use view::{ViewInfo, ViewId};
+use view::View;
+pub use view::{ViewId, ViewInfo};
 
 #[derive(thiserror::Error, Debug, Clone)]
-pub enum CoreError  {
+pub enum CoreError {
     #[error("file not found: '{0}'")]
     FileNotFound(PathBuf),
     #[error("do not have permission to open: '{0}'")]
     FilePermissions(PathBuf),
 }
-
 
 // pub enum KeaCore {
 //     Waiting,
@@ -51,11 +49,10 @@ impl KeaCore {
     }
 }
 
-
 pub struct WeakCore(Weak<Mutex<Core>>);
 
 impl WeakCore {
-    pub fn upgrade(&self) ->  KeaCore {
+    pub fn upgrade(&self) -> KeaCore {
         match self.0.upgrade() {
             Some(core) => KeaCore(core),
             None => panic!("Kea Core was not created"),
@@ -73,9 +70,9 @@ impl WeakCore {
 //                     panic!();
 //                 }
 //             };
-// 
+//
 //             use Edit::*;
-// 
+//
 //             match edit_operation {
 //                 OpenFile(view_info) => {
 //                     let result = core.inner().open_file(view_info);
@@ -83,7 +80,7 @@ impl WeakCore {
 //                         Ok(view) => {
 //                             let id = view.view;
 //                             duplex.send(Update::View(view)).unwrap();
-// 
+//
 //                             let update = core.inner().update_view(id);
 //                             duplex.send(update).unwrap();
 //                         }

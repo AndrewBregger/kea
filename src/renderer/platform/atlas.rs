@@ -2,10 +2,10 @@
 // This is to assist rendering of text. All common characters are preloaded into a set of fixed sized textures
 // to allow quick access and render.
 
-use crate::font::{self, FontDesc, GlyphId, RasterizedGlyph, FontMetrics, FontCollection, Font};
+use crate::font::{self, Font, FontCollection, FontDesc, FontMetrics, GlyphId, RasterizedGlyph};
 use crate::gl::{self, types::*};
+use crate::renderer::{vec4, Vector4F};
 use std::collections::HashMap;
-use crate::renderer::{Vector4F, vec4};
 // use euclid::{default::Vector2D, vec2};
 use crate::pathfinder_geometry::vector::{vec2f, Vector2F, Vector2I};
 type AtlasSize = (i32, i32);
@@ -99,7 +99,12 @@ pub struct GlyphInfo {
 
 impl GlyphInfo {
     pub fn tex_info(&self) -> Vector4F {
-        vec4(self.uv.x(), self.uv.y(), self.uv_delta.x(), self.uv_delta.y())
+        vec4(
+            self.uv.x(),
+            self.uv.y(),
+            self.uv_delta.x(),
+            self.uv_delta.y(),
+        )
     }
 }
 
@@ -127,7 +132,7 @@ impl FontAtlas {
             x_offset: 0,
             y_offset: 0,
             max_height: 0,
-            dpi_factor
+            dpi_factor,
         }
     }
 
@@ -135,24 +140,35 @@ impl FontAtlas {
         self.dpi_factor
     }
 
-    pub fn from_collection<P>(collection: &mut FontCollection, loader: P) -> Result<Self, font::FontError>
-        where P: FnMut(&mut Self, &mut Font) -> Result<(), font::FontError> {
+    pub fn from_collection<P>(
+        collection: &mut FontCollection,
+        loader: P,
+    ) -> Result<Self, font::FontError>
+    where
+        P: FnMut(&mut Self, &mut Font) -> Result<(), font::FontError>,
+    {
         let mut atlas = Self::new(collection.dpi_factor());
         atlas.new_atlas(&ATLAS_SIZE);
         atlas.load_collection(collection, loader)?;
         Ok(atlas)
     }
 
-    fn load_collection<P>(&mut self, collection: &mut FontCollection, mut loader: P) -> Result<(), font::FontError>
-        where P: FnMut(&mut Self, &mut Font) -> Result<(), font::FontError> {
+    fn load_collection<P>(
+        &mut self,
+        collection: &mut FontCollection,
+        mut loader: P,
+    ) -> Result<(), font::FontError>
+    where
+        P: FnMut(&mut Self, &mut Font) -> Result<(), font::FontError>,
+    {
         for i in 0..collection.num_fonts() {
             println!("Loading Font index: {}", i);
-           match collection.font_at_mut(i) {
-               Some(font) => loader(self, font)?,
-               _ => {}
-           }
+            match collection.font_at_mut(i) {
+                Some(font) => loader(self, font)?,
+                _ => {}
+            }
         }
-       Ok(())
+        Ok(())
     }
 
     pub fn atlas(&self) -> &[Atlas] {
@@ -203,7 +219,7 @@ impl FontAtlas {
 
         let uv_delta = vec2f(
             glyph.width as f32 / ATLAS_SIZE.0 as f32,
-            glyph.height as f32 / ATLAS_SIZE.1 as f32,
+            (glyph.height + 1) as f32 / ATLAS_SIZE.1 as f32,
         );
 
         let advance = glyph.advance;
@@ -217,7 +233,6 @@ impl FontAtlas {
             advance,
             origin,
         };
-
 
         atlas
             .glyph_infos
@@ -235,7 +250,10 @@ impl FontAtlas {
         let mut buffer = Vec::with_capacity((glyph.width * glyph.height) as usize);
         let mut buffers = Vec::new();
         for y in 0..glyph.height {
-            let (row_start, row_end) = (y as usize * glyph.width as usize, (y + 1) as usize * glyph.width as usize);
+            let (row_start, row_end) = (
+                y as usize * glyph.width as usize,
+                (y + 1) as usize * glyph.width as usize,
+            );
             let row = &glyph.bitmap[row_start..row_end];
             buffers.push(row);
         }

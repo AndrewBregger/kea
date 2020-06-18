@@ -1,8 +1,8 @@
+mod edits;
 mod frame;
+mod key_bindings;
 mod layout;
 mod line_cache;
-mod edits;
-mod key_bindings;
 
 pub use frame::*;
 pub use layout::*;

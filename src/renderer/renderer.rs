@@ -1,19 +1,17 @@
 use std::collections::HashMap;
 
 use super::platform::shader::{RectShader, Shader, TextShader};
-use super::{Color, Rect, RenderError, vec4, Vector4F, platform, TextLine, Glyph};
 use super::style::{self, Style, StyleMap};
+use super::{platform, vec4, Color, Glyph, Rect, RenderError, TextLine, Vector4F};
+use crate::font::{self, Font, FontCollection, FontDesc, FontMetrics, GlyphId};
 use crate::glutin::dpi::{LogicalPosition, LogicalSize};
-use crate::font::{self, Font, FontDesc, GlyphId, FontMetrics, FontCollection};
+use crate::ui::{Frame, Text};
 
-// use crate::euclid::vec2;
-use crate::pathfinder_geometry::{vector::vec2f};
-use platform::atlas::{Atlas, FontAtlas};
+use crate::pathfinder_geometry::vector::vec2f;
 use pathfinder_geometry::transform3d::Transform4F;
+use platform::atlas::{Atlas, FontAtlas};
 
 use log::{debug, info};
-
-
 
 macro_rules! gl_check {
     ($f:expr) => {{
@@ -63,7 +61,7 @@ pub enum SubmitResult {
     /// flushed to allow for the mode to change.
     ChangeMode,
     /// Element was added without error.
-    Ok
+    Ok,
 }
 
 const RECT_QUAD: usize = 4096;
@@ -82,10 +80,7 @@ pub struct RectVertex {
 
 impl RectVertex {
     fn create(vertex: Vector4F, bg_color: Color) -> Self {
-        Self {
-            vertex,
-            bg_color,
-        }
+        Self { vertex, bg_color }
     }
 }
 
@@ -113,7 +108,7 @@ impl TextVertex {
             vertex,
             fg_color,
             tex_info,
-            texture_id
+            texture_id,
         }
     }
 }
@@ -144,7 +139,6 @@ impl<T: Clone> Batch<T> {
     pub fn len(&self) -> usize {
         self.data.len()
     }
-
 
     pub fn capacity(&self) -> usize {
         self.data.capacity()
@@ -177,20 +171,23 @@ fn generate_indices() -> Vec<u32> {
 pub struct RenderContext {
     style_map: StyleMap,
     font_collection: FontCollection,
+    font_size: f32,
+    dpi_factor: f32,
 }
 
 impl RenderContext {
-
-    pub fn new(collection: FontCollection) -> RenderContext {
+    pub fn new(collection: FontCollection, font_size: f32, dpi_factor: f32) -> RenderContext {
         let mut context = Self {
             style_map: StyleMap::new(),
             font_collection: collection,
+            font_size,
+            dpi_factor
         };
 
         // temporary until real color themes are implemented.
         let normal = Style::new(0, Color::black(), Color::white(), false, false);
         let italic = Style::new(1, Color::black(), Color::white(), true, false);
-        let bold   = Style::new(2, Color::black(), Color::white(), false, true);
+        let bold = Style::new(2, Color::black(), Color::white(), false, true);
 
         context.register_style(normal);
         context.register_style(italic);
@@ -208,8 +205,13 @@ impl RenderContext {
     pub fn fonts(&self) -> &FontCollection {
         &self.font_collection
     }
-}
 
+    #[inline]
+    pub fn font_size(&self) -> f32 { self.font_size }
+
+    #[inline]
+    pub fn dpi_factor(&self) -> f32 { self.dpi_factor  }
+}
 
 /// Maintains information needed to render
 pub struct Renderer {
@@ -249,9 +251,7 @@ impl Renderer {
         }
     }
 
-
     pub fn init(&mut self) -> Result<(), RenderError> {
-
         self.rect_shader.init()?;
         self.text_shader.init()?;
 
@@ -264,7 +264,6 @@ impl Renderer {
         }
         Ok(())
     }
-
 
     fn init_ibo(&mut self) -> Result<(), RenderError> {
         let indices = generate_indices();
@@ -296,13 +295,13 @@ impl Renderer {
         for (i, sz) in layout.iter().enumerate() {
             gl_check!(gl::EnableVertexAttribArray(i as u32));
             gl_check!(gl::VertexAttribPointer(
-                    i as u32,
-                    *sz,
-                    gl::FLOAT,
-                    gl::FALSE,
-                    size,
-                    (stride * std::mem::size_of::<f32>()) as *const _
-                ));
+                i as u32,
+                *sz,
+                gl::FLOAT,
+                gl::FALSE,
+                size,
+                (stride * std::mem::size_of::<f32>()) as *const _
+            ));
             gl_check!(gl::VertexAttribDivisor(i as u32, 1));
             stride += *sz as usize;
         }
@@ -353,7 +352,7 @@ impl Renderer {
             gl_check!(gl::GenVertexArrays(1, &mut self.text_vao));
             gl_check!(gl::GenBuffers(1, &mut self.text_vbo));
 
-            if self.text_vao == 0 || self.text_vbo == 0{
+            if self.text_vao == 0 || self.text_vbo == 0 {
                 self.text_shader.unbind();
                 return Err(RenderError::TextInitFailed);
             }
@@ -400,8 +399,10 @@ impl Renderer {
     }
 
     pub fn set_perspective(&self, perf: &Transform4F) {
-        self.rect_shader.bounded(|shader| shader.set_perspective(perf));
-        self.text_shader.bounded(|shader| shader.set_perspective(perf));
+        self.rect_shader
+            .bounded(|shader| shader.set_perspective(perf));
+        self.text_shader
+            .bounded(|shader| shader.set_perspective(perf));
     }
 
     pub fn update_perspective(&self, width: i32, height: i32) {
@@ -413,10 +414,12 @@ impl Renderer {
         self.set_perspective(&ortho);
     }
 
-
     /// renders a Rect
     pub fn render_rect(&mut self, _context: &RenderContext, rect: &Rect) {
-        let vertex = RectVertex::create(vec4(rect.pos.x(), rect.pos.y(), rect.width, rect.height), rect.bg_color);
+        let vertex = RectVertex::create(
+            vec4(rect.pos.x(), rect.pos.y(), rect.width, rect.height),
+            rect.bg_color,
+        );
         self.submit_rect(&vertex);
     }
 
@@ -424,9 +427,18 @@ impl Renderer {
     /// Each frame the string will be reprocessed.
     //  this should be use for string that change regularly (such as status bar)
     //  uses the atlas for layout font information.
-    pub fn render_str(&mut self, context: &RenderContext, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, size: f32) {
+    pub fn render_str(
+        &mut self,
+        context: &RenderContext,
+        s: &str,
+        mut x: f32,
+        y: f32,
+        fg_color: Color,
+        bg_color: Color,
+        size: f32,
+    ) {
         let font = context.font_collection.default_font();
-    //pub fn render_str(&mut self, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, desc: FontDesc, size: f32) {
+        //pub fn render_str(&mut self, s: &str, mut x: f32, y: f32, fg_color: Color, bg_color: Color, desc: FontDesc, size: f32) {
 
         // let metrics = self.font_metrics.get(&desc).expect("requesting metrics for unknown font").scale_with(size, self.atlas.dpi_factor());
         let metrics = font.metrics().scale_with(size, self.atlas.dpi_factor());
@@ -447,7 +459,12 @@ impl Renderer {
             if let Some(info) = self.atlas.get_info(&glyph_id) {
                 let pos = vec2f(x, y) + info.origin;
                 let vertex = vec4(pos.x(), pos.y(), info.size.x(), info.size.y());
-                let tex_info = vec4(info.uv.x(), info.uv.y(), info.uv_delta.x(), info.uv_delta.y());
+                let tex_info = vec4(
+                    info.uv.x(),
+                    info.uv.y(),
+                    info.uv_delta.x(),
+                    info.uv_delta.y(),
+                );
                 let tex_id = info.tex as f32;
                 let vertex = TextVertex::create(vertex, fg_color, tex_info, tex_id);
 
@@ -459,7 +476,14 @@ impl Renderer {
         }
     }
 
-    pub fn render_line(&mut self, context: &RenderContext, line: &TextLine, x: f32, y: f32, size: f32) {
+    pub fn render_line(
+        &mut self,
+        context: &RenderContext,
+        line: &TextLine,
+        x: f32,
+        y: f32,
+        size: f32,
+    ) {
         let glyphs = line.glyphs.as_slice();
         for style in line.styles.as_slice() {
             let span = style.span();
@@ -473,24 +497,42 @@ impl Renderer {
                     let glyph_id = GlyphId::new(glyph.ch, size, font.desc.clone());
                     if let Some(info) = self.atlas.get_info(&glyph_id) {
                         let vertex = TextVertex::create(
-                            vec4(x + glyph.x + info.origin.x(), y + info.origin.y(), info.size.x(), info.size.y()),
+                            vec4(
+                                x + glyph.x + info.origin.x(),
+                                y + info.origin.y(),
+                                info.size.x(),
+                                info.size.y(),
+                            ),
                             style.text_color().clone(),
                             info.tex_info(),
-                            info.tex as f32);
+                            info.tex as f32,
+                        );
 
                         self.submit_character(&vertex);
                     }
                 }
+            } else {
+                println!("Failed to find style: {:?}", id);
             }
-            else { println!("Failed to find style: {:?}", id); }
         }
     }
 
-    pub fn render_cursors(&mut self, context: &RenderContext, line: &TextLine, cursors: &[usize], y: f32, size: f32) {
-        let metrics = context.font_collection.default_font().metrics().scale_with(size, context.font_collection.dpi_factor());
+    pub fn render_cursors(
+        &mut self,
+        context: &RenderContext,
+        line: &TextLine,
+        cursors: &[usize],
+        y: f32,
+        size: f32,
+    ) {
+        let metrics = context
+            .font_collection
+            .default_font()
+            .metrics()
+            .scale_with(size, context.font_collection.dpi_factor());
         for column in cursors {
             let x = line.glyphs[*column].x;
-            self.render_cursor(context, x, y + metrics.descent, metrics.line_height());
+            self.render_cursor(context, x, y, metrics.line_height());
         }
     }
 
@@ -501,12 +543,52 @@ impl Renderer {
         self.render_rect(context, &rect);
     }
 
+    pub fn render_frame(&mut self, context: &RenderContext, frame: &mut Frame) {
+        let width = frame.width();
+        let height = frame.height();
+        let origin = frame.origin();
+        let font = context.fonts().default_font();
+        let metrics = font
+            .metrics()
+            .scale_with(context.font_size(), context.dpi_factor());
+        let start_y = metrics.ascent;
+        let start_x = 0.0;
+
+        let x = start_x + origin.x();
+        let mut y = start_y + origin.y();
+
+        for line in frame.lines_mut() {
+            if let Some(line) = line {
+                if line.assoc.is_none() {
+                    // generate glyphs
+                    let text_line = Self::position_line(&line, font);
+                    line.assoc = Some(text_line);
+                }
+
+                if let Some(text) = line.assoc.as_ref() {
+                    // render glyphs.
+                    self.render_line(context, text, x, y, context.font_size());
+
+                    if !line.cursors.is_empty() {
+                        self.render_cursors(
+                            context,
+                            text,
+                            line.cursors.as_slice(),
+                            y,
+                            context.font_size(),
+                        );
+                    }
+                }
+            }
+            y += metrics.line_height();
+        }
+    }
+
     pub fn submit_rect(&mut self, vertex: &RectVertex) {
         if self.mode != RenderMode::Rect {
             self.flush();
             self.mode = RenderMode::Rect;
-        }
-        else if !self.rect_batch.has_room() {
+        } else if !self.rect_batch.has_room() {
             self.flush();
         }
         self.rect_batch.push(vertex);
@@ -516,8 +598,7 @@ impl Renderer {
         if self.mode != RenderMode::Text {
             self.flush();
             self.mode = RenderMode::Text;
-        }
-        else if !self.text_batch.has_room() {
+        } else if !self.text_batch.has_room() {
             self.flush();
         }
         self.text_batch.push(vertex);
@@ -548,7 +629,6 @@ impl Renderer {
                 vertices.as_ptr() as *const _,
                 gl::STREAM_DRAW
             ));
-
 
             gl_check!(gl::Enable(gl::BLEND));
             gl::BlendFuncSeparate(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA, gl::ZERO, gl::ONE);
@@ -610,7 +690,6 @@ impl Renderer {
         self.text_shader.unbind();
     }
 
-
     pub fn flush(&mut self) {
         use RenderMode::*;
         match self.mode {
@@ -622,8 +701,24 @@ impl Renderer {
                 self.flush_text();
                 self.text_batch.clear();
             }
-            None => {
+            None => {}
+        }
+    }
+
+    fn position_line(line: &Text<TextLine>, font: &Font) -> TextLine {
+// use crate::eucd::vec2;
+        let mut glyphs = Vec::new();
+
+        let mut x = 0.0;
+        for ch in line.text.chars() {
+            if let Some(info) = font.info(ch) {
+                let glyph = Glyph { ch, x };
+
+                glyphs.push(glyph);
+                x += info.advance.x();
             }
         }
+
+        TextLine::new(glyphs, line.styles.clone())
     }
 }

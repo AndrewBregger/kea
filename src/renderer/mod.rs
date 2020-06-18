@@ -1,22 +1,22 @@
 #![allow(dead_code)]
 
-use kea::comm::{Receiver};
-pub mod window;
-mod rect;
+use kea::comm::Receiver;
 mod color;
 pub mod platform;
+mod rect;
 mod renderer;
 pub mod style;
+pub mod window;
 
-pub use window::Window;
-pub use color::Color;
-pub use rect::Rect;
-use std::sync::{Weak, Mutex, Arc, MutexGuard};
-pub use renderer::{Renderer, RenderContext};
 use crate::gl::{self, types::*};
-use log::{error, info, debug};
+pub use color::Color;
+use log::{debug, error, info};
+pub use rect::Rect;
+pub use renderer::{RenderContext, Renderer};
+use std::sync::{Arc, Mutex, MutexGuard, Weak};
+pub use window::Window;
 // use euclid::default::Transform3D;
-use crate::font::{FontCollection, Font};
+use crate::font::{Font, FontCollection};
 use pathfinder_geometry::transform3d::Transform4F;
 
 #[derive(Debug, Clone, Copy)]
@@ -29,13 +29,7 @@ pub struct Vector4F {
 }
 
 pub fn vec4(x: f32, y: f32, z: f32, w: f32) -> Vector4F {
-    Vector4F {
-        x,
-        y,
-        z,
-        w
-    }
-
+    Vector4F { x, y, z, w }
 }
 
 impl Vector4F {
@@ -67,15 +61,12 @@ pub struct Glyph {
 #[derive(Debug, Clone)]
 pub struct TextLine {
     glyphs: Vec<Glyph>,
-    styles: Vec<style::StyleSpan>
+    styles: Vec<style::StyleSpan>,
 }
 
 impl TextLine {
     pub fn new(glyphs: Vec<Glyph>, styles: Vec<style::StyleSpan>) -> Self {
-        Self {
-            glyphs,
-            styles
-        }
+        Self { glyphs, styles }
     }
 }
 
@@ -127,5 +118,4 @@ impl Renderer {
     //         }
     //     })
     // }
-
 }
