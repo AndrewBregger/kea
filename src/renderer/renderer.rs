@@ -572,16 +572,6 @@ impl Renderer {
                 if let Some(text) = line.assoc.as_ref() {
                     // render glyphs.
                     self.render_line(context, text, x, y, context.font_size());
-
-                    if !line.cursors.is_empty() {
-                        self.render_cursors(
-                            context,
-                            text,
-                            line.cursors.as_slice(),
-                            y,
-                            context.font_size(),
-                        );
-                    }
                 }
             }
             y += metrics.line_height();

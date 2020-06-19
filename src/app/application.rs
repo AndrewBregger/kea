@@ -182,51 +182,19 @@ impl Application {
             match key {
                 VirtualKeyCode::Up => {
                     if let Some(frame) = self.active_frame_mut() {
-                        if let Some(diff) = frame.move_cursor(CursorMotion::Up, 1) {
-                            if diff < 0 {
-                                frame.scroll_down(0, diff.abs() as usize);
-                            } else {
-                                frame.scroll_up(0, diff as usize);
-                            }
-                            self.draw_requested = true;
-                        }
                     }
                 }
                 VirtualKeyCode::Down => {
                     println!("Handling Down");
                     if let Some(frame) = self.active_frame_mut() {
-                        if let Some(diff) = frame.move_cursor(CursorMotion::Down, 1) {
-                            if diff < 0 {
-                                frame.scroll_down(0, diff.abs() as usize);
-                            } else {
-                                frame.scroll_up(0, diff as usize);
-                            }
-                            self.draw_requested = true;
-                        }
                     }
                 }
                 VirtualKeyCode::Left => {
                     if let Some(frame) = self.active_frame_mut() {
-                        if let Some(diff) = frame.move_cursor(CursorMotion::Left, 1) {
-                            if diff < 0 {
-                                frame.scroll_down(0, diff.abs() as usize);
-                            } else {
-                                frame.scroll_up(0, diff as usize);
-                            }
-                            self.draw_requested = true;
-                        }
                     }
                 }
                 VirtualKeyCode::Right => {
                     if let Some(frame) = self.active_frame_mut() {
-                        if let Some(diff) = frame.move_cursor(CursorMotion::Right, 1) {
-                            if diff < 0 {
-                                frame.scroll_down(0, diff.abs() as usize);
-                            } else {
-                                frame.scroll_up(0, diff as usize);
-                            }
-                            self.draw_requested = true;
-                        }
                     }
                 }
                 _ => {}

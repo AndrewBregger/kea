@@ -31,6 +31,12 @@ impl Cursor {
     pub fn new(line: usize, column: usize) -> Self {
         Self { line, column }
     }
+
+    #[inline]
+    pub fn line(&self) -> usize { self.line }
+
+    #[inline]
+    pub fn column(&self) -> usize { self.column }
 }
 
 #[derive(Debug, Clone, Copy, Hash, Ord, PartialOrd, Eq, PartialEq)]
@@ -126,8 +132,8 @@ impl Frame {
     pub fn update_line_cache(&mut self, invalidation: Invalidation) {
         match invalidation {
             Invalidation::Init => self.fill_cache(),
-            Invalidation::ScrollUp { pixels, lines } => self.scroll_up(pixels, lines),
-            Invalidation::ScrollDown { pixels, lines } => self.scroll_down(pixels, lines),
+            Invalidation::ScrollUp { pixels, lines } => {},
+            Invalidation::ScrollDown { pixels, lines } => {},
         }
     }
 
@@ -141,11 +147,11 @@ impl Frame {
                 break;
             }
 
-            let cursor = self.get_cursors(self.view.start + idx);
+            // let cursor = self.get_cursors(self.view.start + idx);
 
             // layout the line
             for (offset, text) in self
-                .layout_line(idx + 1, line, cursor)
+                .layout_line(idx + 1, line, None)
                 .into_iter()
                 .enumerate()
             {
@@ -192,51 +198,4 @@ impl Frame {
             None
         }
     }
-
-    pub fn move_cursor(&mut self, dir: CursorMotion, diff: usize) -> Option<isize> {
-        match dir {
-            CursorMotion::Up => {
-                if self.cursor.line > 0 {
-                    self.cursor.line -= diff;
-                }
-            }
-            CursorMotion::Down => {
-                self.cursor.line += diff;
-            }
-            CursorMotion::Left => {
-                if self.cursor.column > 0 {
-                    self.cursor.column -= diff;
-                }
-            }
-            CursorMotion::Right => {
-                self.cursor.column += diff;
-            }
-        }
-
-        self.update_view_from_cursor()
-    }
-
-    /// attempts to update the view of the frame.
-    /// It used the view according to the cursor.
-    /// Returns the number of lines changes and the sign
-    /// denotes the direction of the change.
-    fn update_view_from_cursor(&mut self) -> Option<isize> {
-        if self.view.contains(&self.cursor.line) {
-            None
-        } else if self.cursor.line < self.view.start {
-            let diff = self.view.start - self.cursor.line;
-            self.view.start = self.cursor.line;
-            Some(diff as isize)
-        } else if self.cursor.line > self.view.end {
-            let diff = (self.cursor.line - self.view.end) as isize;
-            self.view.end = self.cursor.line;
-            Some(-diff)
-        } else {
-            unreachable!()
-        }
-    }
-
-    pub fn scroll_up(&mut self, pixels: usize, lines: usize) {}
-
-    pub fn scroll_down(&mut self, pixels: usize, lines: usize) {}
 }
